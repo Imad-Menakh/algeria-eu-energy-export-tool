@@ -1,0 +1,32 @@
+[
+  {
+    "scenario": "Electricity",
+    "export_volume_TWh_year": 640,
+    "market_price_EUR_MWh": 68.0,
+    "annual_revenue_EUR_bn": 43.52,
+    "annual_export_cost_for_profit_EUR_bn": 29.317,
+    "reported_net_profit_EUR_bn": 14.203,
+    "incremental_system_cost_for_LCOX_EUR_bn": 30.01,
+    "LCOX_EUR_MWh": 46.890625
+  },
+  {
+    "scenario": "Green hydrogen",
+    "export_volume_TWh_year": 662,
+    "market_price_EUR_MWh": 57.5,
+    "annual_revenue_EUR_bn": 38.065,
+    "annual_export_cost_for_profit_EUR_bn": 23.375,
+    "reported_net_profit_EUR_bn": 14.69,
+    "incremental_system_cost_for_LCOX_EUR_bn": 23.421,
+    "LCOX_EUR_MWh": 35.379154
+  },
+  {
+    "scenario": "E-methane",
+    "export_volume_TWh_year": 574,
+    "market_price_EUR_MWh": 90.0,
+    "annual_revenue_EUR_bn": 51.66,
+    "annual_export_cost_for_profit_EUR_bn": 20.676,
+    "reported_net_profit_EUR_bn": 30.984,
+    "incremental_system_cost_for_LCOX_EUR_bn": 20.676,
+    "LCOX_EUR_MWh": 36.020906
+  }
+]
