@@ -1,0 +1,173 @@
+{
+  "scenarios": [
+    {
+      "name": "2050 Domestic Base",
+      "wind_MW": 324498,
+      "pv_MW": 531400,
+      "wind_TWh": 1006.67,
+      "pv_TWh": 1123.33,
+      "electrolyser_MW": 149000,
+      "battery_GWh": 1330,
+      "hydrogen_GWh": 226,
+      "gas_GWh": 27000,
+      "co2_tph": 14859,
+      "export": "None"
+    },
+    {
+      "name": "2050 Electricity Export",
+      "wind_MW": 73000,
+      "pv_MW": 1345620,
+      "wind_TWh": 226.46,
+      "pv_TWh": 2844.53,
+      "electrolyser_MW": 192385,
+      "battery_GWh": 5175,
+      "hydrogen_GWh": 270,
+      "gas_GWh": 10000,
+      "co2_tph": 20000,
+      "export": "640 TWh electricity"
+    },
+    {
+      "name": "2050 Green Hydrogen Export",
+      "wind_MW": 348415,
+      "pv_MW": 894000,
+      "wind_TWh": 1080.87,
+      "pv_TWh": 1889.84,
+      "electrolyser_MW": 403746,
+      "battery_GWh": 1785,
+      "hydrogen_GWh": 400,
+      "gas_GWh": 6000,
+      "co2_tph": 14859,
+      "export": "662 TWh hydrogen"
+    },
+    {
+      "name": "2050 E-methane Export",
+      "wind_MW": 173355,
+      "pv_MW": 1096880,
+      "wind_TWh": 573.79,
+      "pv_TWh": 2318.71,
+      "electrolyser_MW": 550500,
+      "battery_GWh": 1500,
+      "hydrogen_GWh": 210,
+      "gas_GWh": 18000,
+      "co2_tph": 62390,
+      "export": "574.26 TWh e-methane"
+    }
+  ],
+  "electricity_use": [
+    {
+      "use": "Household and industry electricity",
+      "TWh": 419.25
+    },
+    {
+      "use": "Transport electrification",
+      "TWh": 105.16
+    },
+    {
+      "use": "Water desalination (approx.)",
+      "TWh": 384
+    },
+    {
+      "use": "Electrolysers \u2014 domestic base",
+      "TWh": 695.1
+    },
+    {
+      "use": "Electrolysers \u2014 electricity export",
+      "TWh": 584
+    },
+    {
+      "use": "Electrolysers \u2014 e-methane export",
+      "TWh": 1615.66
+    }
+  ],
+  "hvdc": [
+    {
+      "route": "Site 02\u2013Oran",
+      "distance_km": 473.93,
+      "capacity_TWh_year": 382.867,
+      "losses_TWh_year": 5.367
+    },
+    {
+      "route": "Site 02\u2013El Kala",
+      "distance_km": 536.12,
+      "capacity_TWh_year": 629.972,
+      "losses_TWh_year": 9.972
+    },
+    {
+      "route": "Site 02\u2013Algiers",
+      "distance_km": 654.24,
+      "capacity_TWh_year": 168.238,
+      "losses_TWh_year": 3.238
+    },
+    {
+      "route": "Site 02\u2013South",
+      "distance_km": 2759.92,
+      "capacity_TWh_year": 29.777,
+      "losses_TWh_year": 2.277
+    },
+    {
+      "route": "Submarine\u2013Italy",
+      "distance_km": 111.5,
+      "capacity_TWh_year": 401.338,
+      "losses_TWh_year": 1.338
+    },
+    {
+      "route": "Submarine\u2013Spain",
+      "distance_km": 78,
+      "capacity_TWh_year": 240.562,
+      "losses_TWh_year": 0.562
+    }
+  ],
+  "hydrogen_routes": [
+    {
+      "route": "Site 02\u2013Algiers",
+      "onshore_km": 450,
+      "offshore_km": 0,
+      "demand_TWh": 92,
+      "repurposed_TWh": 92,
+      "new_TWh": 0
+    },
+    {
+      "route": "Site 02\u2013East",
+      "onshore_km": 550,
+      "offshore_km": 0,
+      "demand_TWh": 92,
+      "repurposed_TWh": 92,
+      "new_TWh": 0
+    },
+    {
+      "route": "Site 03\u2013West",
+      "onshore_km": 400,
+      "offshore_km": 0,
+      "demand_TWh": 92,
+      "repurposed_TWh": 92,
+      "new_TWh": 0
+    },
+    {
+      "route": "Site 02\u2013Spain",
+      "onshore_km": 450,
+      "offshore_km": 100,
+      "demand_TWh": 200,
+      "repurposed_TWh": 105.6,
+      "new_TWh": 94.4
+    },
+    {
+      "route": "Site 02\u2013Italy",
+      "onshore_km": 650,
+      "offshore_km": 150,
+      "demand_TWh": 462,
+      "repurposed_TWh": 294.8,
+      "new_TWh": 167.2
+    }
+  ],
+  "notes": {
+    "base_generation_table9_TWh": 2134.33,
+    "base_generation_narrative_TWh": 2177.83,
+    "electricity_export_table10_TWh": 3075.33,
+    "electricity_export_narrative_TWh": 3179.58,
+    "electricity_export_CEEP_TWh": 554.49,
+    "electricity_export_input_TWh": 660,
+    "electricity_export_losses_TWh": 20,
+    "electricity_export_net_TWh": 640,
+    "flexible_demand_TWh": 42
+  }
+}
