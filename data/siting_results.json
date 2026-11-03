@@ -1,0 +1,22 @@
+[
+  {
+    "site": "Site 01",
+    "score": 156,
+    "rank": 3
+  },
+  {
+    "site": "Site 02",
+    "score": 161,
+    "rank": 1
+  },
+  {
+    "site": "Site 03",
+    "score": 158,
+    "rank": 2
+  },
+  {
+    "site": "Site 04",
+    "score": 119,
+    "rank": 4
+  }
+]
