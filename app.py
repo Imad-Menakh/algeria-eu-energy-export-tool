@@ -21,7 +21,7 @@ st.info("The final thesis is the primary reference for published results. Intera
 
 pages = [
     "Research overview", "Four assessment dimensions", "Renewable energy siting",
-    "Algeria's energy system", "Export scenario comparison", "Economic assessment",
+    "Algeria's energy system", "Technical assessment", "Export scenario comparison", "Economic assessment",
     "Social assessment", "Environmental assessment", "Interactive scenario explorer",
     "Methodology and sources"
 ]
@@ -128,6 +128,49 @@ elif page == "Algeria's energy system":
     st.header("Algeria's energy system")
     st.metric("2050 final energy demand", "908.72 TWh/year")
     st.info("Detailed generation mix, installed capacities, storage and energy-balance results will be populated from the final thesis tables. Final energy demand must not be confused with total electricity generation.")
+
+
+elif page == "Technical assessment":
+    st.header("Technical assessment")
+    st.write("This module presents the EnergyPLAN reference configurations and the technical infrastructure described in the thesis.")
+    tech = load_data("technical_results.json")
+    tech_df = pd.DataFrame(tech["scenarios"])
+    selected = st.selectbox("Select a scenario", tech_df["name"].tolist())
+    row = tech_df.loc[tech_df["name"] == selected].iloc[0]
+    a,b,c = st.columns(3)
+    a.metric("Onshore wind capacity", f"{row['wind_MW']:,.0f} MW")
+    b.metric("Solar PV capacity", f"{row['pv_MW']:,.0f} MW")
+    c.metric("Electrolyser capacity", f"{row['electrolyser_MW']:,.0f} MW")
+    st.subheader("Scenario configuration")
+    st.dataframe(tech_df.rename(columns={
+        "name":"Scenario","wind_MW":"Wind capacity (MW)","pv_MW":"PV capacity (MW)",
+        "wind_TWh":"Wind generation (TWh)","pv_TWh":"PV generation (TWh)",
+        "electrolyser_MW":"Electrolysers (MW)","battery_GWh":"Battery storage (GWh)",
+        "hydrogen_GWh":"Hydrogen storage (GWh)","gas_GWh":"Gas storage (GWh)",
+        "co2_tph":"CO₂ capture (tonnes/hour)","export":"Export target"
+    }), hide_index=True, use_container_width=True)
+    st.subheader("Installed wind and solar capacity")
+    cap = tech_df.melt(id_vars="name",value_vars=["wind_MW","pv_MW"],var_name="Technology",value_name="Capacity (MW)")
+    cap["Technology"] = cap["Technology"].map({"wind_MW":"Onshore wind","pv_MW":"Solar PV"})
+    st.plotly_chart(px.bar(cap,x="name",y="Capacity (MW)",color="Technology",barmode="group",title="Installed generation capacity"),use_container_width=True)
+    st.subheader("Annual wind and solar generation")
+    gen = tech_df.melt(id_vars="name",value_vars=["wind_TWh","pv_TWh"],var_name="Technology",value_name="Generation (TWh/year)")
+    gen["Technology"] = gen["Technology"].map({"wind_TWh":"Onshore wind","pv_TWh":"Solar PV"})
+    st.plotly_chart(px.bar(gen,x="name",y="Generation (TWh/year)",color="Technology",barmode="group",title="Wind and PV generation"),use_container_width=True)
+    st.subheader("Storage requirements")
+    st.dataframe(tech_df[["name","battery_GWh","hydrogen_GWh","gas_GWh"]].rename(columns={"name":"Scenario","battery_GWh":"Battery (GWh)","hydrogen_GWh":"Hydrogen (GWh)","gas_GWh":"Gas (GWh)"}),hide_index=True,use_container_width=True)
+    st.subheader("Electricity consumption indicators")
+    st.dataframe(pd.DataFrame(tech["electricity_use"]),hide_index=True,use_container_width=True)
+    st.metric("Critical excess electricity production — electricity export",f"{tech['notes']['electricity_export_CEEP_TWh']} TWh/year")
+    st.write(f"The electricity export case models {tech['notes']['electricity_export_input_TWh']} TWh/year entering the export chain. The thesis assumes {tech['notes']['electricity_export_losses_TWh']} TWh of losses, leaving {tech['notes']['electricity_export_net_TWh']} TWh/year delivered. Flexible demand is estimated at {tech['notes']['flexible_demand_TWh']} TWh/year.")
+    with st.expander("Electricity HVDC routes — thesis Tables 15–16"):
+        st.dataframe(pd.DataFrame(tech["hvdc"]),hide_index=True,use_container_width=True)
+    with st.expander("Hydrogen pipeline routes — thesis Table 18"):
+        st.dataframe(pd.DataFrame(tech["hydrogen_routes"]),hide_index=True,use_container_width=True)
+    with st.expander("Important thesis data notes"):
+        st.warning("The thesis reports base-scenario total electricity generation as 2,134.33 TWh in Table 9 but 2,177.83 TWh in the later narrative. For electricity exports, Table 10 reports 3,075.33 TWh while the later narrative reports 3,179.58 TWh. These differences are flagged rather than reconciled.")
+        st.warning("Battery and gas storage values are transcribed from the thesis storage discussion and scenario tables. Where table and narrative figures differ, they should be interpreted with their source context; older workbooks are not used to overwrite thesis results.")
+    st.caption("Sources: thesis Tables 9–18 and Section 4.2, approximately pp. 78–95.")
 
 elif page == "Export scenario comparison":
     st.header("Export scenario comparison")
