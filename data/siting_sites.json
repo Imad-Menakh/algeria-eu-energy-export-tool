@@ -1,0 +1,53 @@
+[
+  {
+    "site": "Site 01",
+    "region": "Southwestern Region",
+    "provinces": [
+      "Adrar",
+      "Bordj Baji Mokhtar",
+      "Beni Abbes"
+    ],
+    "score": 156,
+    "rank": 3
+  },
+  {
+    "site": "Site 02",
+    "region": "Central Region",
+    "provinces": [
+      "Bechar",
+      "Beni Abbes",
+      "El Bayadh",
+      "Ghardaia",
+      "El Menia",
+      "Laghouat",
+      "Ouled Djlal",
+      "Djelfa",
+      "El M’ghair",
+      "Ouargla"
+    ],
+    "score": 161,
+    "rank": 1
+  },
+  {
+    "site": "Site 03",
+    "region": "Southeast Region",
+    "provinces": [
+      "Illizi",
+      "Ouargla",
+      "El Oued",
+      "Touggourt"
+    ],
+    "score": 158,
+    "rank": 2
+  },
+  {
+    "site": "Site 04",
+    "region": "Southern Sahara",
+    "provinces": [
+      "In Guezzam",
+      "Tamanrasset"
+    ],
+    "score": 119,
+    "rank": 4
+  }
+]

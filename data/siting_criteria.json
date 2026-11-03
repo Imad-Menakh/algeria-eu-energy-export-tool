@@ -1,0 +1,268 @@
+[
+  {
+    "id": "wind",
+    "criterion": "Annual wind average speed at 100 m",
+    "unit": "m/s",
+    "weight": 0.3,
+    "direction": "Higher is better",
+    "scores": [
+      96.3,
+      87.8,
+      100.0,
+      50.0
+    ],
+    "raw": [
+      "8.45",
+      "8.38",
+      "8.48",
+      "8.07"
+    ]
+  },
+  {
+    "id": "solar",
+    "criterion": "Annual solar irradiation (GHI)",
+    "unit": "kWh/m²/year",
+    "weight": 0.25,
+    "direction": "Higher is better",
+    "scores": [
+      75.4,
+      50.0,
+      56.9,
+      100.0
+    ],
+    "raw": [
+      "2197.3",
+      "2076.85",
+      "2109.7",
+      "2314.1"
+    ]
+  },
+  {
+    "id": "coast",
+    "criterion": "Distance to Mediterranean coast",
+    "unit": "See source note",
+    "weight": 0.2,
+    "direction": "Lower is better",
+    "scores": [
+      82.6,
+      100.0,
+      94.4,
+      50.0
+    ],
+    "raw": [
+      "680.20",
+      "275.42",
+      "404.98",
+      "1438.25"
+    ]
+  },
+  {
+    "id": "land",
+    "criterion": "Available land area",
+    "unit": "See source note",
+    "weight": 0.2,
+    "direction": "Higher is better",
+    "scores": [
+      100.0,
+      50.0,
+      76.0,
+      60.9
+    ],
+    "raw": [
+      "269025",
+      "184383",
+      "228426",
+      "202863"
+    ]
+  },
+  {
+    "id": "gas",
+    "criterion": "Natural gas infrastructure",
+    "unit": "km (as described in notes)",
+    "weight": 0.15,
+    "direction": "Higher is better in scoring table",
+    "scores": [
+      57.8,
+      100.0,
+      83.1,
+      50.0
+    ],
+    "raw": [
+      "-200",
+      "1413.15",
+      "766.21",
+      "-500"
+    ]
+  },
+  {
+    "id": "roads",
+    "criterion": "Road network coverage",
+    "unit": "Source reports coverage; unit needs checking",
+    "weight": 0.15,
+    "direction": "Higher is better",
+    "scores": [
+      63.0,
+      100.0,
+      83.0,
+      50.0
+    ],
+    "raw": [
+      "815",
+      "1610.2",
+      "1259.94",
+      "534.32"
+    ]
+  },
+  {
+    "id": "italy",
+    "criterion": "Distance to Italy export point (HVDC)",
+    "unit": "km",
+    "weight": 0.15,
+    "direction": "Lower is better",
+    "scores": [
+      57.6,
+      100.0,
+      95.5,
+      50.0
+    ],
+    "raw": [
+      "1514.38",
+      "589.88",
+      "688.36",
+      "1680.58"
+    ]
+  },
+  {
+    "id": "spain",
+    "criterion": "Distance to Spain export point (HVDC)",
+    "unit": "km",
+    "weight": 0.1,
+    "direction": "Lower is better",
+    "scores": [
+      73.4,
+      100.0,
+      78.5,
+      50.0
+    ],
+    "raw": [
+      "1064.26",
+      "538.58",
+      "963.41",
+      "1526.60"
+    ]
+  },
+  {
+    "id": "grid",
+    "criterion": "Distance to electricity grid",
+    "unit": "Qualitative category (<50 / >50)",
+    "weight": 0.1,
+    "direction": "Lower is better",
+    "scores": [
+      50.0,
+      100.0,
+      100.0,
+      50.0
+    ],
+    "raw": [
+      ">50",
+      "<50",
+      "<50",
+      ">50"
+    ]
+  },
+  {
+    "id": "protected",
+    "criterion": "Distance to environmental protection area",
+    "unit": "km (as described in notes)",
+    "weight": 0.1,
+    "direction": "Higher is better in scoring table",
+    "scores": [
+      100.0,
+      50.0,
+      50.3,
+      50.3
+    ],
+    "raw": [
+      "700",
+      "20",
+      "23",
+      "24"
+    ]
+  },
+  {
+    "id": "unemployment",
+    "criterion": "Local unemployment rate",
+    "unit": "%",
+    "weight": 0.1,
+    "direction": "Higher is better in scoring table",
+    "scores": [
+      57.0,
+      100.0,
+      50.0,
+      55.0
+    ],
+    "raw": [
+      "10.72",
+      "14.62",
+      "10.08",
+      "10.54"
+    ]
+  },
+  {
+    "id": "history",
+    "criterion": "Historical rehabilitation potential",
+    "unit": "Qualitative",
+    "weight": 0.1,
+    "direction": "Higher is better",
+    "scores": [
+      100.0,
+      50.0,
+      50.0,
+      50.0
+    ],
+    "raw": [
+      "100",
+      "75",
+      "50",
+      "50"
+    ]
+  },
+  {
+    "id": "admin",
+    "criterion": "Administrative complexity",
+    "unit": "Number of provinces",
+    "weight": 0.05,
+    "direction": "Lower is better",
+    "scores": [
+      93.7,
+      50.0,
+      87.5,
+      100.0
+    ],
+    "raw": [
+      "3",
+      "10",
+      "4",
+      "2"
+    ]
+  },
+  {
+    "id": "population",
+    "criterion": "Population density",
+    "unit": "inhabitants/km²",
+    "weight": 0.05,
+    "direction": "Lower is better",
+    "scores": [
+      88.3,
+      50.0,
+      58.9,
+      100.0
+    ],
+    "raw": [
+      "1.2",
+      "3.69",
+      "3.11",
+      "0.44"
+    ]
+  }
+]
