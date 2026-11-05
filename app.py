@@ -69,11 +69,22 @@ elif page == "Renewable energy siting":
 
     st.subheader("Step 1 — Candidate development zones")
     st.write("The thesis manually delineates four large candidate zones after excluding mountainous and steep-slope areas, high-density urban zones, northern Algeria, small or isolated areas and protected regions.")
+    st.markdown("**Interactive map — Google Maps hybrid view**")
+    st.write("This embedded Scribble Maps view preserves the Google hybrid satellite/map background and the map overlays, including the Western Sahara boundary as displayed in the saved map. Use the map controls to zoom and explore the candidate zones and infrastructure.")
+    scribble_map_url = (
+        "https://widgets.scribblemaps.com/sm/?d&dv&cv&z&l&gc&af&mc&svc&ssvce"
+        "&lat=27.240154501&lng=-0.9121612&vz=5&type=hybrid&ti&s"
+        "&width=900&height=650&id=r6OghBMTAp"
+    )
+    st.components.v1.iframe(scribble_map_url, height=680, scrolling=True)
+    st.caption("Map source: the user's saved Scribble Maps map (Map ID r6OghBMTAp). The base layer is set to Google Hybrid; do not use 'Style Your Own Base Map' if it switches the map to the Scribble Maps/OSM style.")
+
     map_path = Path(__file__).parent / "assets" / "thesis_site_selection_map.png"
     if map_path.exists():
-        st.image(str(map_path), caption="Figure 2.1 from the thesis: Renewable energy development zones in Algeria (2050). The original thesis map is shown without redrawing or inventing site boundaries.", use_container_width=True)
+        with st.expander("View the original thesis map (Figure 2.1)"):
+            st.image(str(map_path), caption="Original Figure 2.1 from the 2025 thesis, retained for reference.", use_container_width=True)
 
-    st.caption("The thesis map is retained as the geographic reference. The site polygons are manually delineated in the thesis; precise GIS boundary files or coordinates were not supplied, so this update does not create artificial map coordinates.")
+    st.warning("The four candidate zones were manually delineated in the thesis. Their exact GIS polygons or coordinates were not provided. The interactive map displays the saved Scribble Maps drawing; it should not be interpreted as a newly verified GIS boundary dataset. Pipeline lines and labels should also be read according to the thesis limitations discussed in the infrastructure assessment.")
     site_choice = st.selectbox("Explore a candidate site", sites["site"].tolist(), key="siting_site_detail")
     selected_site = sites.loc[sites["site"] == site_choice].iloc[0]
     a, b, c = st.columns(3)
