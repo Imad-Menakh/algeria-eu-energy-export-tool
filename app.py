@@ -73,12 +73,6 @@ elif page == "Renewable energy siting":
     if map_path.exists():
         st.image(str(map_path), caption="Figure 2.1 from the thesis: Renewable energy development zones in Algeria (2050). The original thesis map is shown without redrawing or inventing site boundaries.", use_container_width=True)
 
-    st.subheader("Original interactive map — Scribble Maps")
-    st.write("Explore the original map created for the thesis. This map is embedded from Scribble Maps; its original regions, labels and infrastructure layers are maintained by the Scribble Maps project.")
-    scribble_map_url = "https://widgets.scribblemaps.com/sm/?d&dv&cv&z&l&gc&af&mc&svc&ssvce&lat=31.452265207&lng=-9.28374322&vz=4&type=hybrid&ti&s&width=550&height=400&id=r6OghBMTAp"
-    st.components.v1.iframe(scribble_map_url, height=650, scrolling=False)
-    st.caption("The embedded map is hosted by Scribble Maps and may depend on the availability and sharing settings of the original map. The thesis figures and published site rankings remain the authoritative research references.")
-
     st.caption("The thesis map is retained as the geographic reference. The site polygons are manually delineated in the thesis; precise GIS boundary files or coordinates were not supplied, so this update does not create artificial map coordinates.")
     site_choice = st.selectbox("Explore a candidate site", sites["site"].tolist(), key="siting_site_detail")
     selected_site = sites.loc[sites["site"] == site_choice].iloc[0]
@@ -404,6 +398,21 @@ elif page == "Economic assessment":
         st.write("Incremental export system cost = total export-scenario system cost − total domestic base-scenario system cost.")
         st.write("LCOX = incremental annual system cost ÷ net annual export energy delivered.")
         st.caption("The final thesis is the authoritative source for published results. Supporting workbooks help explain calculations and discrepancies; they do not silently overwrite thesis values.")
+
+    st.subheader("E-methane export — supplementary pipeline capacity note")
+    st.write("The thesis assumes that existing natural gas infrastructure can be used to transport e-methane without additional transport investment. A supplementary screening check compares the e-methane export target with the nominal Algeria–Europe pipeline capacity figures used in the thesis.")
+    capacity_view = pd.DataFrame([
+        {"Indicator":"TransMed nominal capacity (thesis reference)","Value":"33.5 bcm/year"},
+        {"Indicator":"Medgaz nominal capacity (thesis reference)","Value":"12.0 bcm/year"},
+        {"Indicator":"Combined nominal capacity","Value":"45.5 bcm/year"},
+        {"Indicator":"Energy conversion used in thesis hydrogen pipeline table","Value":"10 TWh per bcm"},
+        {"Indicator":"Indicative combined energy capacity","Value":"455 TWh/year"},
+        {"Indicator":"Thesis e-methane export target","Value":"574 TWh/year"},
+        {"Indicator":"Indicative additional capacity required","Value":"119 TWh/year (11.9 bcm/year)"},
+    ])
+    st.dataframe(capacity_view, hide_index=True, use_container_width=True)
+    st.warning("This is a supplementary capacity-screening calculation, not a pipeline engineering study. The 45.5 bcm/year is nominal combined capacity, not necessarily capacity available exclusively for e-methane: conventional natural gas exports may already use part of it. Meeting the full 574 TWh/year target may therefore require expansion of existing pipelines, new transport infrastructure, or reallocation of existing flows. The thesis's reported e-methane revenue, costs, net profit and LCOX are retained unchanged and should be read under the original transport assumption.")
+    st.caption("Basis: thesis pipeline capacity figures for TransMed and Medgaz and the thesis's 10 TWh/bcm conversion scale; the 119 TWh/year shortfall is a supplementary arithmetic comparison, not a revised thesis result.")
 
 elif page == "Social assessment":
     st.header("Social assessment")
