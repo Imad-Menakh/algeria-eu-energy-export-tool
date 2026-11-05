@@ -39,8 +39,8 @@ if page == "Research overview":
     dimensions = [
         ("Technical","System configuration, generation, storage, energy balances and infrastructure"),
         ("Economic","Investment, system costs, revenues, profitability and LCOX"),
-        ("Social","Employment and socioeconomic implications"),
-        ("Environmental","Land, water and environmental implications")
+        ("Social","Employment, water access, regional equity and socioeconomic development"),
+        ("Environmental","Land requirements, energy-related water demand and emissions")
     ]
     for col,(name,desc) in zip(cols,dimensions):
         with col:
@@ -57,9 +57,9 @@ elif page == "Four assessment dimensions":
 
     **Economic viability** — investment requirements, system costs, export revenues, profitability and LCOX.
 
-    **Social implications** — employment creation and socioeconomic considerations.
+    **Social implications** — employment creation, improved access to safe water, water security, regional equity and socioeconomic development.
 
-    **Environmental implications** — land and water requirements and environmental considerations.
+    **Environmental implications** — land requirements, water consumption associated with energy production, and emissions.
     """)
     st.caption("Detailed indicators and numerical results will be integrated from the corresponding thesis chapters and appendices.")
 
@@ -219,18 +219,38 @@ elif page == "Social assessment":
         st.write("Adjustment factors: " + ", ".join(f"{k.replace('_',' ')} = {v}" for k,v in method["adjustment_factors"].items()) + ".")
         st.write(f"Desalination: {method['desalination_factor_jobs_per_million_m3_year']} jobs per million m³/year; the thesis says this relationship is valid up to {method['desalination_factor_limit_million_m3_year']} million m³/year and cautions against extrapolation beyond it.")
         st.write(f"HVDC transmission: {method['hvdc_jobs_per_billion_eur_investment']:,} jobs per €bn investment. Water infrastructure: {method['water_infrastructure_jobs_per_million_usd_investment']} jobs per US$ million investment.")
-    st.subheader("Water security and regional access")
+    st.subheader("Water security and access — a social benefit")
     w = se["water_access"]
     a,b,c = st.columns(3)
-    a.metric("Water availability per capita", f"{w['water_per_capita_2050_m3_year']:,} m³/year", f"from {w['water_per_capita_current_m3_year']} m³/year")
-    b.metric("Desalination share target", f"{w['desalination_share_2050_percent']}%")
-    c.metric("Planned water pipelines", f"{w['planned_water_pipeline_km']:,} km")
-    st.caption("These are thesis projections and infrastructure plans, not achieved outcomes. The thesis also projects water access increasing from 70.6% to 100% and identifies rising water stress as a major 2050 challenge.")
+    a.metric("Water availability per capita", f"{w['water_per_capita_2050_m3_year']:,} m³/person/year", f"from {w['water_per_capita_current_m3_year']} m³/person/year")
+    b.metric("Water access target", f"{w['water_access_2050_percent']}%", f"from {w['water_access_current_percent']}% in {w['current_reference_year']}")
+    c.metric("Planned high-capacity pipelines", f">{w['planned_water_pipeline_km']:,} km")
+    st.write(f"The thesis describes a 2050 water-production system in which desalination supplies {w['desalination_share_2050_percent']}% of production. Coastal desalination facilities would be connected to inland and southern regions through a high-capacity pipeline network.")
+    st.caption("These are thesis projections and planned infrastructure, not achieved outcomes. Improved water access is presented here as a social benefit because it concerns household access, regional equity and quality of life.")
+
+    st.subheader("Regional development and social equity in southern Algeria")
+    st.write("The thesis argues that improved water and electricity services could help address long-standing regional inequalities, particularly in southern Algeria, where the quality and reliability of electricity supply and access to safe water are described as more limited.")
+    st.markdown("""
+    **Potential social and regional benefits identified in the thesis**
+    - More reliable water supplies for households in remote and historically underserved areas.
+    - Better conditions for local agriculture and livestock development.
+    - Support for new population centres and a more balanced distribution of population and economic activity.
+    - Improved logistics, lower transport costs and stronger local economic hubs.
+    - Potential expansion of public services, including education and healthcare, as well as tourism and hospitality.
+    - Vocational training and local workforce development to help residents access jobs created by the transition.
+    """)
+    st.info("These are expected co-benefits discussed in the thesis, not quantified or guaranteed outcomes. Their realisation depends on infrastructure delivery, local workforce development and the availability of public services.")
+
+    st.subheader("Water stress and implementation risks")
+    st.write(f"The thesis anticipates that {w['water_stressed_population_2050_description']} could be affected by water stress by 2050, alongside an anticipated {w['rainfall_decline_2050_percent']}% decline in national rainfall.")
+    st.warning("The thesis also highlights a transition risk: if desalination and water-transmission infrastructure lag behind demand, some southern areas may remain dependent on groundwater in the short term. This could increase pressure on local aquifers. The timing and geographical coverage of water infrastructure therefore matter.")
+    st.caption("The thesis reports national water access increasing from 70.6% to 100%. Its discussion of the southern regions separately describes current safe-water access as around 70%; these are retained as differently framed statements rather than treated as identical measurements.")
     st.warning("Employment values are modelled estimates, not guaranteed jobs. Permanent jobs are annual positions; temporary employment is measured in job-years. Do not add the two categories together.")
 
 elif page == "Environmental assessment":
     st.header("Environmental assessment")
     se = load_data("social_environment.json")
+    st.caption("This section covers environmental pressures from the energy system. Household access to clean water and regional water security are presented under Social Assessment.")
     st.subheader("Water demand across scenarios")
     water = pd.DataFrame(se["water_demand"])
     st.dataframe(water.rename(columns={"scenario":"Scenario","non_energy_use_Gm3_year":"Non-energy use (Gm³/year)","hydrogen_production_water_Gm3_year":"Hydrogen production (Gm³/year)","pv_wind_operations_water_Gm3_year":"PV/wind operations (Gm³/year)","total_water_demand_Gm3_year":"Total demand (Gm³/year)"}),hide_index=True,use_container_width=True)
