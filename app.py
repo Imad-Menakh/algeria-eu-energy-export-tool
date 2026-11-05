@@ -73,6 +73,12 @@ elif page == "Renewable energy siting":
     if map_path.exists():
         st.image(str(map_path), caption="Figure 2.1 from the thesis: Renewable energy development zones in Algeria (2050). The original thesis map is shown without redrawing or inventing site boundaries.", use_container_width=True)
 
+    st.subheader("Original interactive map — Scribble Maps")
+    st.write("Explore the original map created for the thesis. This map is embedded from Scribble Maps; its original regions, labels and infrastructure layers are maintained by the Scribble Maps project.")
+    scribble_map_url = "https://widgets.scribblemaps.com/sm/?d&dv&cv&z&l&gc&af&mc&svc&ssvce&lat=31.452265207&lng=-9.28374322&vz=4&type=hybrid&ti&s&width=550&height=400&id=r6OghBMTAp"
+    st.components.v1.iframe(scribble_map_url, height=650, scrolling=False)
+    st.caption("The embedded map is hosted by Scribble Maps and may depend on the availability and sharing settings of the original map. The thesis figures and published site rankings remain the authoritative research references.")
+
     st.caption("The thesis map is retained as the geographic reference. The site polygons are manually delineated in the thesis; precise GIS boundary files or coordinates were not supplied, so this update does not create artificial map coordinates.")
     site_choice = st.selectbox("Explore a candidate site", sites["site"].tolist(), key="siting_site_detail")
     selected_site = sites.loc[sites["site"] == site_choice].iloc[0]
