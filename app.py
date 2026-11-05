@@ -127,7 +127,7 @@ elif page == "Renewable energy siting":
 elif page == "Algeria's energy system":
     st.header("Algeria's energy system")
     st.metric("2050 final energy demand", "908.72 TWh/year")
-    st.info("The technical assessment provides the scenario-level generation, capacity and storage data. Final energy demand (908.72 TWh/year) is a different indicator from total electricity generation, because the model includes conversion processes, storage and export flows.")
+    st.info("Detailed generation mix, installed capacities, storage and energy-balance results will be populated from the final thesis tables. Final energy demand must not be confused with total electricity generation.")
 
 
 elif page == "Technical assessment":
@@ -167,14 +167,9 @@ elif page == "Technical assessment":
         st.dataframe(pd.DataFrame(tech["hvdc"]),hide_index=True,use_container_width=True)
     with st.expander("Hydrogen pipeline routes — thesis Table 18"):
         st.dataframe(pd.DataFrame(tech["hydrogen_routes"]),hide_index=True,use_container_width=True)
-    with st.expander("Important thesis data notes and generation discrepancies"):
-        st.markdown("**Domestic 2050 base scenario**")
-        st.write("Thesis Table 9 reports 2,134.33 TWh/year of total electricity generation. This corresponds to the wind and PV figures plus the small hydro, geothermal and waste contributions shown in the supporting results. The later thesis narrative reports 2,177.83 TWh/year. The supporting workbook gives approximately 2,173.20 TWh/year when the 38.88 TWh/year condensing contribution is also included. These figures therefore have different scopes or versions; the dashboard retains the published Table 9 value as the thesis table reference and reports the workbook-inclusive calculation separately.")
-        st.markdown("**2050 electricity-export scenario**")
-        st.write("Thesis Table 10 reports 3,075.33 TWh/year. The EnergyPLAN results workbook identifies this as renewable electricity production. It separately reports 9.81 TWh/year from PP2 (condensing generation), giving approximately 3,085.14 TWh/year when those two indicators are combined. The later thesis narrative reports 3,179.58 TWh/year; this figure is not supported by the supplied EnergyPLAN results workbook and is retained here only as a documented discrepancy, not as a validated total.")
-        st.markdown("**Storage units and interpretation**")
-        st.write("The thesis reports battery energy capacity in TWh in its scenario tables. This dashboard converts those values to GWh for readability: for example, 1.33 TWh = 1,330 GWh in the domestic base case and 5.175 TWh = 5,175 GWh in the electricity-export case. Battery energy capacity is distinct from charging/discharging power (MW), and neither should be added to annual electricity generation.")
-        st.info("Reference hierarchy: the final 2025 thesis is the primary source for published thesis results. Supporting EnergyPLAN workbooks are used to clarify indicator scope and arithmetic, not to silently overwrite thesis tables. The 908.72 TWh/year figure is final energy demand; it is not comparable to annual electricity-generation totals.")
+    with st.expander("Important thesis data notes"):
+        st.warning("The thesis reports base-scenario total electricity generation as 2,134.33 TWh in Table 9 but 2,177.83 TWh in the later narrative. For electricity exports, Table 10 reports 3,075.33 TWh while the later narrative reports 3,179.58 TWh. These differences are flagged rather than reconciled.")
+        st.warning("Battery and gas storage values are transcribed from the thesis storage discussion and scenario tables. Where table and narrative figures differ, they should be interpreted with their source context; older workbooks are not used to overwrite thesis results.")
     st.caption("Sources: thesis Tables 9–18 and Section 4.2, approximately pp. 78–95.")
 
 elif page == "Export scenario comparison":
@@ -206,11 +201,56 @@ elif page == "Economic assessment":
 
 elif page == "Social assessment":
     st.header("Social assessment")
-    st.info("Employment and socioeconomic findings will be integrated from the thesis's social-impact assessment. No unsupported estimates are introduced in this version.")
+    se = load_data("social_environment.json")
+    emp = pd.DataFrame(se["employment"])
+    st.write("The thesis estimates employment across the domestic base and three export pathways. Permanent jobs and temporary job-years are shown separately because they represent different types and durations of employment.")
+    a,b = st.columns(2)
+    a.metric("Highest permanent employment", f"{emp['permanent_jobs'].max():,.0f} jobs", "Electricity export")
+    b.metric("Highest temporary employment", f"{emp['temporary_job_years'].max():,.0f} job-years", "Electricity export")
+    st.subheader("Employment estimates by scenario")
+    st.dataframe(emp.rename(columns={"scenario":"Scenario","permanent_jobs":"Permanent jobs (annual)","temporary_job_years":"Temporary employment (job-years)"}),hide_index=True,use_container_width=True)
+    chart = emp.melt(id_vars="scenario",value_vars=["permanent_jobs","temporary_job_years"],var_name="Employment type",value_name="Estimated total")
+    chart["Employment type"] = chart["Employment type"].map({"permanent_jobs":"Permanent jobs","temporary_job_years":"Temporary job-years"})
+    st.plotly_chart(px.bar(chart,x="scenario",y="Estimated total",color="Employment type",barmode="group",title="Employment estimates (different units; compare within each category)"),use_container_width=True)
+    with st.expander("How the thesis estimates employment"):
+        method = se["employment_method"]
+        st.write("**Permanent:** " + method["permanent_jobs"])
+        st.write("**Temporary:** " + method["temporary_jobs"])
+        st.write("Adjustment factors: " + ", ".join(f"{k.replace('_',' ')} = {v}" for k,v in method["adjustment_factors"].items()) + ".")
+        st.write(f"Desalination: {method['desalination_factor_jobs_per_million_m3_year']} jobs per million m³/year; the thesis says this relationship is valid up to {method['desalination_factor_limit_million_m3_year']} million m³/year and cautions against extrapolation beyond it.")
+        st.write(f"HVDC transmission: {method['hvdc_jobs_per_billion_eur_investment']:,} jobs per €bn investment. Water infrastructure: {method['water_infrastructure_jobs_per_million_usd_investment']} jobs per US$ million investment.")
+    st.subheader("Water security and regional access")
+    w = se["water_access"]
+    a,b,c = st.columns(3)
+    a.metric("Water availability per capita", f"{w['water_per_capita_2050_m3_year']:,} m³/year", f"from {w['water_per_capita_current_m3_year']} m³/year")
+    b.metric("Desalination share target", f"{w['desalination_share_2050_percent']}%")
+    c.metric("Planned water pipelines", f"{w['planned_water_pipeline_km']:,} km")
+    st.caption("These are thesis projections and infrastructure plans, not achieved outcomes. The thesis also projects water access increasing from 70.6% to 100% and identifies rising water stress as a major 2050 challenge.")
+    st.warning("Employment values are modelled estimates, not guaranteed jobs. Permanent jobs are annual positions; temporary employment is measured in job-years. Do not add the two categories together.")
 
 elif page == "Environmental assessment":
     st.header("Environmental assessment")
-    st.info("Land, water and environmental findings will be integrated from the thesis's environmental assessment. No unsupported estimates are introduced in this version.")
+    se = load_data("social_environment.json")
+    st.subheader("Water demand across scenarios")
+    water = pd.DataFrame(se["water_demand"])
+    st.dataframe(water.rename(columns={"scenario":"Scenario","non_energy_use_Gm3_year":"Non-energy use (Gm³/year)","hydrogen_production_water_Gm3_year":"Hydrogen production (Gm³/year)","pv_wind_operations_water_Gm3_year":"PV/wind operations (Gm³/year)","total_water_demand_Gm3_year":"Total demand (Gm³/year)"}),hide_index=True,use_container_width=True)
+    st.caption("Values transcribed from thesis Table 13. The thesis table also includes TWh energy-use rows; those are not water volumes and are not included in this table.")
+    st.subheader("Estimated solar PV land requirement")
+    land = pd.DataFrame(se["solar_land_use"])
+    st.dataframe(land.rename(columns={"scenario":"Scenario","pv_generation_GWh_year":"PV generation (GWh/year)","land_km2":"Estimated PV land (km²)","share_site_02_percent":"Share of Site 02 (%)","share_national_area_percent":"Share of national area (%)"}),hide_index=True,use_container_width=True)
+    st.plotly_chart(px.bar(land,x="scenario",y="land_km2",title="Estimated land required for solar PV (km²)"),use_container_width=True)
+    st.caption("The thesis estimates PV land using 211.64 GWh/km²/year, based on 20% panel efficiency, 0.84 system efficiency, 0.24 capacity factor and 0.6 ground coverage ratio. This is a PV land estimate, not a complete footprint for all infrastructure.")
+    st.subheader("CO₂ emissions reported in the thesis")
+    em = se["emissions"]
+    a,b,c = st.columns(3)
+    a.metric("Domestic 2019", f"{em['domestic_2019']:.2f} Mt")
+    b.metric("Domestic 2050", f"{em['domestic_2050_all_scenarios']:.0f} Mt", "All modelled scenarios")
+    c.metric("E-methane export balance", f"{em['including_exports_2050']['E-methane Export']:.2f} Mt")
+    st.write("Including exports, the thesis reports 284.67 Mt in 2019, zero for electricity and hydrogen exports in 2050, and −116.18 Mt for e-methane exports.")
+    st.warning(em["non_co2_note"])
+    with st.expander("Interpretation and limitations"):
+        for item in se["limitations"]:
+            st.write("• " + item)
 
 elif page == "Interactive scenario explorer":
     st.header("Interactive scenario explorer — financial sensitivity")
