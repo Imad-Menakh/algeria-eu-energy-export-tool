@@ -204,21 +204,47 @@ elif page == "Five-scenario comparison":
     tech_map = tech_df.set_index("name").to_dict("index")
     econ_map = econ_df.set_index("scenario").to_dict("index")
 
-    # Four-dimension summary: only populate values directly supported by the thesis dataset.
+    # At-a-glance comparison. Thesis results remain primary; additional 2019 figures
+    # supplied in the comparison workbook are explicitly labelled supplementary.
+    supplementary_2019 = {
+        "wind_pv_generation_TWh_year": 0.70,
+        "battery_storage_GWh": 0,
+        "total_water_demand_Gm3_year": 0.002,
+        "pv_land_km2": 3.0,
+    }
     rows = []
     for label in scenario_names:
         is_2019 = label == "Algeria 2019 baseline"
-        key = None if is_2019 else label.replace("2050 ", "")
-        t = tech_map.get(label.replace("Algeria 2019 baseline", ""), {}) if not is_2019 else {}
+        t = tech_map.get(label, {})
         e = emp_map.get(label, {})
         w = water_map.get(label, {})
         l = land_map.get(label, {})
         econ_key = {"2050 Electricity Export":"Electricity", "2050 Green Hydrogen Export":"Green hydrogen", "2050 E-methane Export":"E-methane"}.get(label)
         ec = econ_map.get(econ_key, {}) if econ_key else {}
+
+        if is_2019:
+            rows.append({
+                "Scenario": label,
+                "Technical — wind + PV generation (TWh/y)": supplementary_2019["wind_pv_generation_TWh_year"],
+                "Technical — battery storage (GWh)": supplementary_2019["battery_storage_GWh"],
+                "Economic — export product": "Not reported for 2019 baseline",
+                "Economic — export volume (TWh/y)": "Not reported",
+                "Economic — revenue (€bn/y)": "Not reported",
+                "Economic — reported net profit (€bn/y)": "Not reported",
+                "Social — permanent jobs": "Not available",
+                "Social — temporary job-years": "Not available",
+                "Environmental — total water demand (Gm³/y)": supplementary_2019["total_water_demand_Gm3_year"],
+                "Environmental — PV land (km²)": supplementary_2019["pv_land_km2"],
+                "Data provenance": "Supplementary 2019 figures from user-provided comparison; source/method notes required",
+            })
+            continue
+
+        product = "No exports" if not econ_key else {"Electricity":"Electricity", "Green hydrogen":"Green hydrogen", "E-methane":"E-methane"}[econ_key]
         rows.append({
             "Scenario": label,
-            "Technical — wind + PV generation (TWh/y)": (round(t.get("wind_TWh", 0)+t.get("pv_TWh", 0), 2) if t else "Not reported"),
+            "Technical — wind + PV generation (TWh/y)": round(t.get("wind_TWh", 0) + t.get("pv_TWh", 0), 2) if t else "Not reported",
             "Technical — battery storage (GWh)": t.get("battery_GWh", "Not reported"),
+            "Economic — export product": product,
             "Economic — export volume (TWh/y)": ec.get("export_volume_TWh_year", "Not applicable" if not econ_key else "Not reported"),
             "Economic — revenue (€bn/y)": ec.get("annual_revenue_EUR_bn", "Not applicable" if not econ_key else "Not reported"),
             "Economic — reported net profit (€bn/y)": ec.get("reported_net_profit_EUR_bn", "Not applicable" if not econ_key else "Not reported"),
@@ -226,15 +252,28 @@ elif page == "Five-scenario comparison":
             "Social — temporary job-years": e.get("temporary_job_years", "Not reported"),
             "Environmental — total water demand (Gm³/y)": w.get("total_water_demand_Gm3_year", "Not reported"),
             "Environmental — PV land (km²)": l.get("land_km2", "Not reported"),
+            "Data provenance": "Thesis reference results / supporting workbook where noted",
         })
     comparison = pd.DataFrame(rows)
 
     st.subheader("At-a-glance comparison across the four dimensions")
     st.dataframe(comparison, hide_index=True, use_container_width=True)
-    st.caption("‘Not reported’ means the current thesis dataset does not provide a directly comparable value in the extracted reference tables. ‘Not applicable’ means the indicator does not apply to the domestic/no-export pathway.")
+    st.caption("The thesis is the primary reference for the comparison. Selected 2019 technical, water-demand and land figures are supplementary information from the user's comparison table; they are not presented as thesis-reported results. 2024 trade statistics are excluded from this scenario table because they fall outside its 2019 baseline and 2050 thesis-scenario scope.")
+    with st.expander("How to read the data and supplementary 2019 figures"):
+        st.markdown("""
+        - **Thesis:** published findings and scenario results from the 2025 master's thesis.
+        - **Supplementary:** additional figures supplied in the comparison table and supporting workbook material; these extend the thesis explanation but are not presented as thesis findings.
+        - The supplementary 2019 wind + PV generation figure is **0.70 TWh/year** (0.03 TWh wind + 0.67 TWh PV).
+        - 2019 electricity export volume and export value are shown as **Not reported** in this comparison because the available 0.67 TWh and €0.294bn figures refer to a separate 2024 trade-data reference, not the 2019 baseline. The 2024 figures are therefore excluded to keep the thesis comparison focused and avoid mixing years.
+        - The 2024 trade figures are not used as net profit or as 2050 thesis results.
+        - For hydrogen and e-methane, export volume refers to the named export product, not electricity.
+        - Permanent jobs and temporary job-years are different measures and must not be added together.
+        - Household water access is a social benefit; water demand by the energy system is an environmental indicator.
+        - The 2019 water-demand and PV-land figures are supplementary and need a clearly stated source, scope and calculation method before being treated as directly comparable with 2050 results.
+        """)
 
     st.subheader("Technical dimension")
-    st.write("Installed wind and PV generation and battery storage are compared for the four 2050 configurations. The 2019 baseline is retained in the overall comparison, but corresponding values are not populated here because the current dashboard reference dataset does not include a harmonised set of these indicators for that scenario.")
+    st.write("Installed wind and PV generation and battery storage are compared for the four 2050 configurations. The 2019 baseline wind + PV generation and battery figures are supplementary historical/model values supplied in the comparison table; the four 2050 configurations use thesis reference results and supporting workbook data.")
     if not tech_df.empty:
         gen = tech_df[["name", "wind_TWh", "pv_TWh"]].melt(id_vars="name", var_name="Technology", value_name="Generation (TWh/year)")
         gen["Technology"] = gen["Technology"].map({"wind_TWh":"Wind", "pv_TWh":"Solar PV"})
