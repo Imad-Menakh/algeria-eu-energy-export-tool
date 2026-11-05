@@ -1,50 +1,126 @@
 {
   "employment": [
-    {"scenario":"2050 Domestic Base","permanent_jobs":1751920,"temporary_job_years":2028041},
-    {"scenario":"2050 Electricity Export","permanent_jobs":1782931,"temporary_job_years":3074386},
-    {"scenario":"2050 Green Hydrogen Export","permanent_jobs":1766852,"temporary_job_years":2378977},
-    {"scenario":"2050 E-methane Export","permanent_jobs":1772034,"temporary_job_years":2489021}
+    {
+      "scenario": "2050 Domestic Base",
+      "permanent_jobs": 1751920,
+      "temporary_job_years": 2028041
+    },
+    {
+      "scenario": "2050 Electricity Export",
+      "permanent_jobs": 1782931,
+      "temporary_job_years": 3074386
+    },
+    {
+      "scenario": "2050 Green Hydrogen Export",
+      "permanent_jobs": 1766852,
+      "temporary_job_years": 2378977
+    },
+    {
+      "scenario": "2050 E-methane Export",
+      "permanent_jobs": 1772034,
+      "temporary_job_years": 2489021
+    }
   ],
   "employment_method": {
-    "permanent_jobs":"Operation and maintenance, fuel supply/handling, and desalination employment. Reported as ongoing annual jobs.",
-    "temporary_jobs":"Local and export manufacturing, construction and installation, and electricity and water transmission. Reported as job-years, not permanent positions.",
-    "adjustment_factors":{"capital_expenditure_decline_factor":0.4,"operational_expenditure_decline_factor":0.7,"local_manufacturing_factor":0.65,"regional_employment_multiplier":1.45},
-    "desalination_factor_jobs_per_million_m3_year":0.84,
-    "desalination_factor_limit_million_m3_year":150,
-    "hvdc_jobs_per_billion_eur_investment":5045,
-    "water_infrastructure_jobs_per_million_usd_investment":10
+    "permanent_jobs": "Operation and maintenance, fuel supply/handling, and desalination employment. Reported as ongoing annual jobs.",
+    "temporary_jobs": "Local and export manufacturing, construction and installation, and electricity and water transmission. Reported as job-years, not permanent positions.",
+    "adjustment_factors": {
+      "capital_expenditure_decline_factor": 0.4,
+      "operational_expenditure_decline_factor": 0.7,
+      "local_manufacturing_factor": 0.65,
+      "regional_employment_multiplier": 1.45
+    },
+    "desalination_factor_jobs_per_million_m3_year": 0.84,
+    "desalination_factor_limit_million_m3_year": 150,
+    "hvdc_jobs_per_billion_eur_investment": 5045,
+    "water_infrastructure_jobs_per_million_usd_investment": 10
   },
   "water_demand": [
-    {"scenario":"2050 Domestic Base","non_energy_use_Gm3_year":48.736,"hydrogen_production_water_Gm3_year":0.074,"pv_wind_operations_water_Gm3_year":0.013,"total_water_demand_Gm3_year":48.824},
-    {"scenario":"2050 Electricity Export","non_energy_use_Gm3_year":48.736,"hydrogen_production_water_Gm3_year":0.074,"pv_wind_operations_water_Gm3_year":0.033,"total_water_demand_Gm3_year":48.844},
-    {"scenario":"2050 Green Hydrogen Export","non_energy_use_Gm3_year":48.736,"hydrogen_production_water_Gm3_year":0.253,"pv_wind_operations_water_Gm3_year":0.026,"total_water_demand_Gm3_year":49.015},
-    {"scenario":"2050 E-methane Export","non_energy_use_Gm3_year":48.736,"hydrogen_production_water_Gm3_year":0.074,"pv_wind_operations_water_Gm3_year":0.022,"total_water_demand_Gm3_year":48.833}
+    {
+      "scenario": "2050 Domestic Base",
+      "non_energy_use_Gm3_year": 48.736,
+      "hydrogen_production_water_Gm3_year": 0.074,
+      "pv_wind_operations_water_Gm3_year": 0.013,
+      "total_water_demand_Gm3_year": 48.824
+    },
+    {
+      "scenario": "2050 Electricity Export",
+      "non_energy_use_Gm3_year": 48.736,
+      "hydrogen_production_water_Gm3_year": 0.074,
+      "pv_wind_operations_water_Gm3_year": 0.033,
+      "total_water_demand_Gm3_year": 48.844
+    },
+    {
+      "scenario": "2050 Green Hydrogen Export",
+      "non_energy_use_Gm3_year": 48.736,
+      "hydrogen_production_water_Gm3_year": 0.253,
+      "pv_wind_operations_water_Gm3_year": 0.026,
+      "total_water_demand_Gm3_year": 49.015
+    },
+    {
+      "scenario": "2050 E-methane Export",
+      "non_energy_use_Gm3_year": 48.736,
+      "hydrogen_production_water_Gm3_year": 0.074,
+      "pv_wind_operations_water_Gm3_year": 0.022,
+      "total_water_demand_Gm3_year": 48.833
+    }
   ],
   "water_access": {
-    "current_reference_year":2023,
-    "future_year":2050,
-    "water_per_capita_current_m3_year":282,
-    "water_per_capita_2050_m3_year":1000,
-    "desalination_share_2050_percent":80,
-    "planned_water_pipeline_km":6838,
-    "water_access_current_percent":70.6,
-    "water_access_2050_percent":100,
-    "water_stressed_population_current_percent":40,
-    "water_stressed_population_2050_projection_percent":80
+    "current_reference_year": 2023,
+    "future_year": 2050,
+    "water_per_capita_current_m3_year": 282,
+    "water_per_capita_2050_m3_year": 1000,
+    "desalination_share_2050_percent": 80,
+    "planned_water_pipeline_km": 6838,
+    "water_access_current_percent": 70.6,
+    "water_access_2050_percent": 100,
+    "water_stressed_population_current_percent": 40,
+    "water_stressed_population_2050_projection_percent": 80,
+    "water_stressed_population_2050_description": "more than 80% of the population",
+    "rainfall_decline_2050_percent": 20,
+    "regional_safe_water_access_south_current_description": "around 70% (as described separately in the thesis discussion of southern regions)"
   },
   "solar_land_use": [
-    {"scenario":"2050 Domestic Base","pv_generation_GWh_year":1123330,"land_km2":5300.679,"share_site_02_percent":2.87,"share_national_area_percent":0.22},
-    {"scenario":"2050 Electricity Export","pv_generation_GWh_year":2844530,"land_km2":13422.54,"share_site_02_percent":7.23,"share_national_area_percent":0.56},
-    {"scenario":"2050 Green Hydrogen Export","pv_generation_GWh_year":1889840,"land_km2":8917.624,"share_site_02_percent":4.84,"share_national_area_percent":0.37},
-    {"scenario":"2050 E-methane Export","pv_generation_GWh_year":2318710,"land_km2":10941.34,"share_site_02_percent":5.93,"share_national_area_percent":0.46}
+    {
+      "scenario": "2050 Domestic Base",
+      "pv_generation_GWh_year": 1123330,
+      "land_km2": 5300.679,
+      "share_site_02_percent": 2.87,
+      "share_national_area_percent": 0.22
+    },
+    {
+      "scenario": "2050 Electricity Export",
+      "pv_generation_GWh_year": 2844530,
+      "land_km2": 13422.54,
+      "share_site_02_percent": 7.23,
+      "share_national_area_percent": 0.56
+    },
+    {
+      "scenario": "2050 Green Hydrogen Export",
+      "pv_generation_GWh_year": 1889840,
+      "land_km2": 8917.624,
+      "share_site_02_percent": 4.84,
+      "share_national_area_percent": 0.37
+    },
+    {
+      "scenario": "2050 E-methane Export",
+      "pv_generation_GWh_year": 2318710,
+      "land_km2": 10941.34,
+      "share_site_02_percent": 5.93,
+      "share_national_area_percent": 0.46
+    }
   ],
   "emissions": {
-    "unit":"million tonnes CO2 (as reported in thesis; not a complete lifecycle GHG inventory)",
-    "domestic_2019":142.34,
-    "domestic_2050_all_scenarios":0,
-    "including_exports_2019":284.67,
-    "including_exports_2050":{"Electricity Export":0,"Green Hydrogen Export":0,"E-methane Export":-116.18},
-    "non_co2_note":"The thesis states that total CO2-equivalent emissions including CH4, N2O and fluorinated gases are not fully eliminated by 2050; leakage and non-CO2 emissions remain concerns. The reported negative e-methane balance reflects the thesis accounting allocation of captured CO2 to importing countries, not a full lifecycle assessment."
+    "unit": "million tonnes CO2 (as reported in thesis; not a complete lifecycle GHG inventory)",
+    "domestic_2019": 142.34,
+    "domestic_2050_all_scenarios": 0,
+    "including_exports_2019": 284.67,
+    "including_exports_2050": {
+      "Electricity Export": 0,
+      "Green Hydrogen Export": 0,
+      "E-methane Export": -116.18
+    },
+    "non_co2_note": "The thesis states that total CO2-equivalent emissions including CH4, N2O and fluorinated gases are not fully eliminated by 2050; leakage and non-CO2 emissions remain concerns. The reported negative e-methane balance reflects the thesis accounting allocation of captured CO2 to importing countries, not a full lifecycle assessment."
   },
   "limitations": [
     "Employment figures are modelled estimates based on technology employment factors, investment assumptions and adjustment multipliers; they are not guaranteed jobs or observed employment.",
@@ -54,6 +130,8 @@
     "The 2050 water-access figures are scenario targets/projections, not measured outcomes. The thesis describes more than 6,838 km of planned pipelines and 80% desalination coverage.",
     "Solar land estimates use the thesis assumptions: 20% panel efficiency, 0.84 system efficiency, 0.24 capacity factor and 0.6 ground coverage ratio. They estimate PV land only, not all project infrastructure or ecological disturbance.",
     "The thesis characterises Site 02 as sparsely populated with low ecological activity, but land occupation may still affect grazing, mobility, livelihoods and cultural practices. Local consultation and fair benefit-sharing are necessary.",
-    "The emissions results are thesis accounting outputs, not independently verified lifecycle emissions. The negative e-methane balance depends on the thesis treatment of captured CO2 and importing-country offsets."
+    "The emissions results are thesis accounting outputs, not independently verified lifecycle emissions. The negative e-methane balance depends on the thesis treatment of captured CO2 and importing-country offsets.",
+    "The thesis gives a national water-access comparison of 70.6% to 100%, while its southern-regions discussion describes current safe-water access as around 70%. These differently framed statements are not treated as identical measurements.",
+    "The thesis anticipates more than 80% of the population could be affected by water stress by 2050 and a 20% decline in national rainfall. These are projections cited in the social-benefits discussion."
   ]
 }
