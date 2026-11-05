@@ -67,29 +67,31 @@ elif page == "Renewable energy siting":
     st.header("Renewable energy siting assessment")
     st.write("The thesis applies a two-step process: preliminary spatial filtering, followed by a multi-criteria suitability assessment (MCDA).")
 
-    st.subheader("Step 1 — Preliminary spatial filtering")
-    st.write("The thesis excludes mountainous and steep-slope areas, high-density urban zones, northern Algeria, small or isolated areas and protected regions. Four large candidate development zones were manually delineated.")
+    st.subheader("Step 1 — Candidate development zones")
+    st.write("The thesis manually delineates four large candidate zones after excluding mountainous and steep-slope areas, high-density urban zones, northern Algeria, small or isolated areas and protected regions.")
+    map_path = Path(__file__).parent / "assets" / "thesis_site_selection_map.png"
+    if map_path.exists():
+        st.image(str(map_path), caption="Figure 2.1 from the thesis: Renewable energy development zones in Algeria (2050). The original thesis map is shown without redrawing or inventing site boundaries.", use_container_width=True)
 
-    st.subheader("Four candidate development zones")
-    site_cols = st.columns(2)
-    for i, site in sites.iterrows():
-        with site_cols[i % 2]:
-            st.markdown(f"### {site['site']} — {site['region']}")
-            st.write(", ".join(site["provinces"]))
-            st.metric("Original MCDA score", int(site["score"]), f"Rank {int(site['rank'])}")
-
+    st.caption("The thesis map is retained as the geographic reference. The site polygons are manually delineated in the thesis; precise GIS boundary files or coordinates were not supplied, so this update does not create artificial map coordinates.")
+    site_choice = st.selectbox("Explore a candidate site", sites["site"].tolist(), key="siting_site_detail")
+    selected_site = sites.loc[sites["site"] == site_choice].iloc[0]
+    a, b, c = st.columns(3)
+    a.metric("Thesis-reported total score", int(selected_site["score"]))
+    b.metric("Thesis-reported rank", int(selected_site["rank"]))
+    c.metric("Region", selected_site["region"])
+    st.write("**Provinces included:** " + ", ".join(selected_site["provinces"]))
     st.caption("The detailed province lists reproduce Appendix 2. The main-text description of Site 02 is shorter; the appendix list is shown here.")
 
-    st.subheader("Step 2 — Multi-criteria suitability assessment")
+    st.subheader("Step 2 — Original MCDA assessment")
     st.write("Fourteen indicators are assessed using Min–Max normalisation on a scale from 50 (least favourable) to 100 (most favourable). Reverse scoring is applied where lower values are preferred.")
-
-    score_matrix = pd.DataFrame({"Criterion":criteria["criterion"],"Weight":criteria["weight"],"Scoring preference":criteria["direction"]})
+    score_matrix = pd.DataFrame({"Criterion":criteria["criterion"],"Original weight":criteria["weight"],"Scoring preference":criteria["direction"]})
     for i, site in sites.iterrows():
         score_matrix[site["site"]] = criteria["scores"].apply(lambda values: values[i])
     st.markdown("**Original criterion scores — Appendix 2, Table 2.2**")
     st.dataframe(score_matrix, hide_index=True, use_container_width=True)
 
-    st.subheader("Original overall ranking")
+    st.subheader("Original thesis ranking")
     ranked = sites.sort_values("rank")
     fig = px.bar(ranked, x="site", y="score", text="score", title="Thesis-reported MCDA total scores",
                  labels={"site":"Candidate site","score":"Reported total score"})
@@ -97,16 +99,59 @@ elif page == "Renewable energy siting":
     fig.update_yaxes(range=[0,180])
     st.plotly_chart(fig, use_container_width=True)
 
+    st.subheader("Interactive weighting experiment")
+    st.write("Change the importance assigned to each criterion and see how the relative site ranking responds. The underlying thesis criterion scores remain fixed.")
+    st.info("This is an exploratory weighted-score calculation, not a rerun of the thesis MCDA or EnergyPLAN. The published thesis totals and ranking above remain unchanged. Because the weights printed in Appendix 2 sum to 2.00 and the published totals cannot be reconstructed exactly from the displayed table, this explorer reports a separate weighted-average index on the original 50–100 score scale.")
+
+    if st.button("Reset weights to thesis values", key="reset_siting_weights"):
+        for i, item in criteria.iterrows():
+            st.session_state[f"siting_weight_{i}"] = float(item["weight"])
+        st.rerun()
+
+    weight_cols = st.columns(2)
+    interactive_weights = []
+    for i, item in criteria.iterrows():
+        with weight_cols[i % 2]:
+            value = st.slider(
+                item["criterion"], min_value=0.0, max_value=0.5,
+                value=float(item["weight"]), step=0.01,
+                key=f"siting_weight_{i}", help=f"Original thesis weight: {item['weight']:.2f}. {item['direction']}"
+            )
+        interactive_weights.append(value)
+
+    weight_total = sum(interactive_weights)
+    if weight_total <= 0:
+        st.warning("Increase at least one criterion weight to calculate a ranking.")
+    else:
+        score_values = [[float(v) for v in row] for row in criteria["scores"]]
+        interactive_scores = []
+        for site_index in range(len(sites)):
+            weighted_score = sum(interactive_weights[i] * score_values[i][site_index] for i in range(len(criteria))) / weight_total
+            interactive_scores.append(weighted_score)
+        result = sites[["site", "region", "score", "rank"]].copy()
+        result["Interactive weighted index"] = interactive_scores
+        result = result.sort_values("Interactive weighted index", ascending=False).reset_index(drop=True)
+        result["Interactive rank"] = range(1, len(result) + 1)
+        result = result.rename(columns={"score":"Thesis total score", "rank":"Thesis rank"})
+        st.caption(f"Current adjustable weight total: {weight_total:.2f}. Weights are normalised proportionally inside the weighted-average calculation; the original thesis weights remain unchanged in the source data.")
+        st.dataframe(result[["site", "region", "Thesis total score", "Thesis rank", "Interactive weighted index", "Interactive rank"]].round({"Interactive weighted index":2}), hide_index=True, use_container_width=True)
+        chart = px.bar(result, x="site", y="Interactive weighted index", color="Interactive rank", text="Interactive rank", title="Site ranking under your selected criteria weights", labels={"site":"Candidate site", "Interactive weighted index":"Weighted index (50–100)", "Interactive rank":"New rank"})
+        chart.update_traces(textposition="outside")
+        chart.update_yaxes(range=[45,105])
+        st.plotly_chart(chart, use_container_width=True)
+        winner = result.iloc[0]
+        st.success(f"Under the current weighting choices, {winner['site']} ranks first with an interactive index of {winner['Interactive weighted index']:.2f}.")
+
     st.subheader("Explore an individual criterion")
-    selected = st.selectbox("Choose an indicator", criteria["criterion"].tolist())
+    selected = st.selectbox("Choose an indicator", criteria["criterion"].tolist(), key="siting_criterion_detail")
     item = criteria.loc[criteria["criterion"] == selected].iloc[0]
     rows = [{"Candidate site":sites.iloc[i]["site"],"Reported raw value":item["raw"][i],"Reported score":item["scores"][i]} for i in range(len(sites))]
-    st.write(f"**Weight:** {item['weight']:.2f}  |  **Scoring preference:** {item['direction']}")
+    st.write(f"**Original weight:** {item['weight']:.2f}  |  **Scoring preference:** {item['direction']}")
     st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
     st.subheader("Scoring equations")
-    st.latex(r"Score(x)=50+\\left(\\frac{x-x_{min}}{x_{max}-x_{min}}\\right)\\times 50")
-    st.latex(r"Score_{reverse}(x)=100-\\left(\\frac{x-x_{min}}{x_{max}-x_{min}}\\right)\\times 50")
+    st.latex(r"Score(x)=50+\left(\frac{x-x_{min}}{x_{max}-x_{min}}\right)\times 50")
+    st.latex(r"Score_{reverse}(x)=100-\left(\frac{x-x_{min}}{x_{max}-x_{min}}\right)\times 50")
 
     with st.expander("Methodological notes and limitations reported in Appendix 2"):
         st.markdown("""
@@ -122,7 +167,7 @@ elif page == "Renewable energy siting":
         st.warning("Appendix 2 Table 2.1 reports weights that sum to 2.00, not 1.00. The original weights and thesis-reported totals are preserved without normalisation. Some raw-value unit labels in the table appear misaligned or unclear, so ambiguous units are flagged rather than silently corrected.")
 
     st.success("Site 02 is the highest-ranked candidate in the thesis, with a reported score of 161 and rank 1.")
-    st.info("This is the original thesis reference assessment. Interactive weight changes and alternative rankings are not enabled until the weighting and aggregation procedure has been independently checked.")
+    st.caption("The map is the original thesis figure. The site selector and weighting experiment are interactive; exact clickable geographic polygons require the original GIS boundaries or site-coordinate data.")
 
 elif page == "Algeria's energy system":
     st.header("Algeria's energy system")
