@@ -21,7 +21,7 @@ st.info("The final thesis is the primary reference for published results. Intera
 
 pages = [
     "Research overview", "Four assessment dimensions", "Renewable energy siting",
-    "Algeria's energy system", "Technical assessment", "Export scenario comparison", "Economic assessment",
+    "Algeria's energy system", "Technical assessment", "Five-scenario comparison", "Export scenario comparison", "Economic assessment",
     "Social assessment", "Environmental assessment", "Interactive scenario explorer",
     "Methodology and sources"
 ]
@@ -171,6 +171,122 @@ elif page == "Technical assessment":
         st.warning("The thesis reports base-scenario total electricity generation as 2,134.33 TWh in Table 9 but 2,177.83 TWh in the later narrative. For electricity exports, Table 10 reports 3,075.33 TWh while the later narrative reports 3,179.58 TWh. These differences are flagged rather than reconciled.")
         st.warning("Battery and gas storage values are transcribed from the thesis storage discussion and scenario tables. Where table and narrative figures differ, they should be interpreted with their source context; older workbooks are not used to overwrite thesis results.")
     st.caption("Sources: thesis Tables 9–18 and Section 4.2, approximately pp. 78–95.")
+
+elif page == "Five-scenario comparison":
+    st.header("Five-scenario comparison")
+    st.write("Compare the 2019 baseline and four 2050 pathways across the thesis’s technical, economic, social and environmental assessment dimensions.")
+    st.info("The comparison preserves the thesis’s source coverage. Where the thesis dataset supplied for this dashboard does not provide a comparable indicator for a scenario, the table shows ‘Not reported’ rather than estimating or filling the gap.")
+
+    tech = load_data("technical_results.json")
+    social_env = load_data("social_environment.json")
+    tech_df = pd.DataFrame(tech["scenarios"])
+    emp_df = pd.DataFrame(social_env["employment"])
+    water_df = pd.DataFrame(social_env["water_demand"])
+    land_df = pd.DataFrame(social_env["solar_land_use"])
+    econ_df = exports.copy()
+
+    scenario_names = [
+        "Algeria 2019 baseline",
+        "2050 Domestic Base",
+        "2050 Electricity Export",
+        "2050 Green Hydrogen Export",
+        "2050 E-methane Export",
+    ]
+    tech_names = {
+        "2050 Domestic Base": "2050 Domestic Base",
+        "2050 Electricity Export": "2050 Electricity Export",
+        "2050 Green Hydrogen Export": "2050 Green Hydrogen Export",
+        "2050 E-methane Export": "2050 E-methane Export",
+    }
+    emp_map = emp_df.set_index("scenario").to_dict("index")
+    water_map = water_df.set_index("scenario").to_dict("index")
+    land_map = land_df.set_index("scenario").to_dict("index")
+    tech_map = tech_df.set_index("name").to_dict("index")
+    econ_map = econ_df.set_index("scenario").to_dict("index")
+
+    # Four-dimension summary: only populate values directly supported by the thesis dataset.
+    rows = []
+    for label in scenario_names:
+        is_2019 = label == "Algeria 2019 baseline"
+        key = None if is_2019 else label.replace("2050 ", "")
+        t = tech_map.get(label.replace("Algeria 2019 baseline", ""), {}) if not is_2019 else {}
+        e = emp_map.get(label, {})
+        w = water_map.get(label, {})
+        l = land_map.get(label, {})
+        econ_key = {"2050 Electricity Export":"Electricity", "2050 Green Hydrogen Export":"Green hydrogen", "2050 E-methane Export":"E-methane"}.get(label)
+        ec = econ_map.get(econ_key, {}) if econ_key else {}
+        rows.append({
+            "Scenario": label,
+            "Technical — wind + PV generation (TWh/y)": (round(t.get("wind_TWh", 0)+t.get("pv_TWh", 0), 2) if t else "Not reported"),
+            "Technical — battery storage (GWh)": t.get("battery_GWh", "Not reported"),
+            "Economic — export volume (TWh/y)": ec.get("export_volume_TWh_year", "Not applicable" if not econ_key else "Not reported"),
+            "Economic — revenue (€bn/y)": ec.get("annual_revenue_EUR_bn", "Not applicable" if not econ_key else "Not reported"),
+            "Economic — reported net profit (€bn/y)": ec.get("reported_net_profit_EUR_bn", "Not applicable" if not econ_key else "Not reported"),
+            "Social — permanent jobs": e.get("permanent_jobs", "Not reported"),
+            "Social — temporary job-years": e.get("temporary_job_years", "Not reported"),
+            "Environmental — total water demand (Gm³/y)": w.get("total_water_demand_Gm3_year", "Not reported"),
+            "Environmental — PV land (km²)": l.get("land_km2", "Not reported"),
+        })
+    comparison = pd.DataFrame(rows)
+
+    st.subheader("At-a-glance comparison across the four dimensions")
+    st.dataframe(comparison, hide_index=True, use_container_width=True)
+    st.caption("‘Not reported’ means the current thesis dataset does not provide a directly comparable value in the extracted reference tables. ‘Not applicable’ means the indicator does not apply to the domestic/no-export pathway.")
+
+    st.subheader("Technical dimension")
+    st.write("Installed wind and PV generation and battery storage are compared for the four 2050 configurations. The 2019 baseline is retained in the overall comparison, but corresponding values are not populated here because the current dashboard reference dataset does not include a harmonised set of these indicators for that scenario.")
+    if not tech_df.empty:
+        gen = tech_df[["name", "wind_TWh", "pv_TWh"]].melt(id_vars="name", var_name="Technology", value_name="Generation (TWh/year)")
+        gen["Technology"] = gen["Technology"].map({"wind_TWh":"Wind", "pv_TWh":"Solar PV"})
+        st.plotly_chart(px.bar(gen, x="name", y="Generation (TWh/year)", color="Technology", barmode="group", title="Annual wind and PV generation — 2050 scenarios"), use_container_width=True)
+        st.plotly_chart(px.bar(tech_df, x="name", y="battery_GWh", title="Battery storage requirements — 2050 scenarios", labels={"name":"2050 scenario", "battery_GWh":"Battery storage (GWh)"}), use_container_width=True)
+
+    st.subheader("Economic dimension")
+    st.write("Economic values are available for the three export pathways. The domestic scenarios have no export revenue or export profit in this comparison.")
+    econ_view = exports[["scenario", "export_volume_TWh_year", "annual_revenue_EUR_bn", "reported_net_profit_EUR_bn", "LCOX_EUR_MWh"]].rename(columns={
+        "scenario":"Export pathway", "export_volume_TWh_year":"Delivered exports (TWh/year)",
+        "annual_revenue_EUR_bn":"Revenue (€bn/year)", "reported_net_profit_EUR_bn":"Reported net profit (€bn/year)",
+        "LCOX_EUR_MWh":"LCOX (€/MWh)"})
+    st.dataframe(econ_view, hide_index=True, use_container_width=True)
+    st.plotly_chart(px.bar(exports, x="scenario", y="reported_net_profit_EUR_bn", title="Reported net profit by export pathway", labels={"scenario":"Export pathway", "reported_net_profit_EUR_bn":"€bn/year"}), use_container_width=True)
+
+    st.subheader("Social dimension")
+    st.write("Employment figures cover the four 2050 scenarios. Permanent jobs are ongoing positions; temporary employment is expressed in job-years. These units are not added together.")
+    st.dataframe(emp_df.rename(columns={"scenario":"2050 scenario", "permanent_jobs":"Permanent jobs", "temporary_job_years":"Temporary job-years"}), hide_index=True, use_container_width=True)
+    st.plotly_chart(px.bar(emp_df, x="scenario", y="permanent_jobs", title="Permanent employment — 2050 scenarios", labels={"scenario":"Scenario", "permanent_jobs":"Jobs"}), use_container_width=True)
+    st.plotly_chart(px.bar(emp_df, x="scenario", y="temporary_job_years", title="Temporary employment — 2050 scenarios", labels={"scenario":"Scenario", "temporary_job_years":"Job-years"}), use_container_width=True)
+    wa = social_env["water_access"]
+    st.markdown("**Shared 2050 social water-access ambition (not a scenario-specific difference):** "
+                f"{wa['water_access_current_percent']}% current access to {wa['water_access_2050_percent']}% target; "
+                f"{wa['water_per_capita_current_m3_year']} to approximately {wa['water_per_capita_2050_m3_year']} m³/person/year; "
+                f"over {wa['planned_water_pipeline_km']:,} km of planned pipelines and {wa['desalination_share_2050_percent']}% desalination share.")
+
+    st.subheader("Environmental dimension")
+    st.write("The table separates total water demand for the energy scenarios from PV land requirements. Household water access is treated as a social benefit, not an environmental indicator.")
+    env_view = water_df.merge(land_df[["scenario", "land_km2", "share_site_02_percent"]], on="scenario", how="left")
+    st.dataframe(env_view.rename(columns={"scenario":"2050 scenario", "total_water_demand_Gm3_year":"Total water demand (Gm³/year)", "non_energy_use_Gm3_year":"Non-energy water use (Gm³/year)", "hydrogen_production_water_Gm3_year":"Hydrogen production (Gm³/year)", "pv_wind_operations_water_Gm3_year":"PV/wind operations (Gm³/year)", "land_km2":"PV land estimate (km²)", "share_site_02_percent":"Share of Site 02 (%)"}), hide_index=True, use_container_width=True)
+    st.plotly_chart(px.bar(water_df, x="scenario", y="total_water_demand_Gm3_year", title="Total water demand — 2050 scenarios", labels={"scenario":"Scenario", "total_water_demand_Gm3_year":"Gm³/year"}), use_container_width=True)
+    st.plotly_chart(px.bar(land_df, x="scenario", y="land_km2", title="Estimated solar PV land requirements — 2050 scenarios", labels={"scenario":"Scenario", "land_km2":"Land (km²)"}), use_container_width=True)
+    em = social_env["emissions"]
+    emissions_rows = [
+        {"Scenario":"Algeria 2019 baseline", "Reported CO₂ (Mt/year)":em["domestic_2019"], "Accounting scope":"Domestic energy-related emissions"},
+        {"Scenario":"2050 Domestic Base", "Reported CO₂ (Mt/year)":em["domestic_2050_all_scenarios"], "Accounting scope":"Domestic energy-system scenario"},
+        {"Scenario":"2050 Electricity Export", "Reported CO₂ (Mt/year)":em["including_exports_2050"]["Electricity Export"], "Accounting scope":"Including exports"},
+        {"Scenario":"2050 Green Hydrogen Export", "Reported CO₂ (Mt/year)":em["including_exports_2050"]["Green Hydrogen Export"], "Accounting scope":"Including exports"},
+        {"Scenario":"2050 E-methane Export", "Reported CO₂ (Mt/year)":em["including_exports_2050"]["E-methane Export"], "Accounting scope":"Including exports"},
+    ]
+    st.markdown("**Thesis-reported CO₂ comparison**")
+    st.dataframe(pd.DataFrame(emissions_rows), hide_index=True, use_container_width=True)
+    st.warning("The negative e-methane value is a thesis accounting result linked to the allocation of captured CO₂ to importing countries. It is not a verified full lifecycle net-negative emissions result. The thesis also notes that non-CO₂ greenhouse gases are not fully eliminated.")
+
+    with st.expander("How to interpret this comparison"):
+        st.markdown("""
+        - The 2019 baseline is included in the five-scenario framework, but not every indicator is available in the current extracted reference dataset for direct comparison.
+        - Technical, employment and environmental scenario indicators shown here are the thesis reference values currently integrated for the four 2050 scenarios.
+        - Economic indicators are shown only for the three export pathways.
+        - Water access, per-capita availability, pipeline length and desalination share are shared 2050 social targets/assumptions, not differentiated scenario outcomes.
+        - This page compares published reference values; it does not run EnergyPLAN or establish new system-feasibility results.
+        """)
 
 elif page == "Export scenario comparison":
     st.header("Export scenario comparison")
