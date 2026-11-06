@@ -3,7 +3,6 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from site_selection_map_component import render_site_admin_map
 
 st.set_page_config(page_title="Algeria Energy Transition Explorer", page_icon="⚡", layout="wide")
 DATA = Path(__file__).parent / "data"
@@ -70,49 +69,23 @@ elif page == "Renewable energy siting":
 
     st.subheader("Step 1 — Candidate development zones")
     st.write("The thesis manually delineates four large candidate zones after excluding mountainous and steep-slope areas, high-density urban zones, northern Algeria, small or isolated areas and protected regions.")
-
-    assets_dir = Path(__file__).parent / "assets"
-    zones_map_path = assets_dir / "thesis_site_selection_map.png"
-    if zones_map_path.exists():
-        st.image(
-            str(zones_map_path),
-            caption="Candidate development zones — thesis Figure 2.1 (2025).",
-            use_container_width=True,
-        )
-
-    st.subheader("Strategic infrastructure reference — thesis Figure 3.3")
-    infra_map_path = assets_dir / "thesis_infrastructure_map.png"
-    if infra_map_path.exists():
-        st.image(
-            str(infra_map_path),
-            caption="Strategic infrastructure layout for Algeria’s 2050 energy transition — thesis Figure 3.3.",
-            use_container_width=True,
-        )
-    st.warning(
-        "This image reproduces the infrastructure layout presented in the 2025 thesis; "
-        "it is a scenario reference, not a verified map of infrastructure currently in operation. "
-        "The thesis describes the natural-gas network as existing infrastructure, but the GALSI "
-        "project was not operational. Its depiction must not be interpreted as an operating "
-        "Algeria–Sardinia pipeline. Proposed HVDC and desalinated-water routes are also future "
-        "infrastructure, not completed assets. The map should be corrected before being used "
-        "to claim current operational pipeline connections."
+    st.markdown("**Interactive map — Google Maps hybrid view**")
+    st.write("This embedded Scribble Maps view preserves the Google hybrid satellite/map background and the map overlays, including the Western Sahara boundary as displayed in the saved map. Use the map controls to zoom and explore the candidate zones and infrastructure.")
+    scribble_map_url = (
+        "https://widgets.scribblemaps.com/sm/?d&dv&cv&z&l&gc&af&mc&svc&ssvce"
+        "&lat=27.240154501&lng=-0.9121612&vz=5&type=hybrid&ti&s"
+        "&width=900&height=650&id=r6OghBMTAp"
     )
+    st.components.v1.iframe(scribble_map_url, height=680, scrolling=True)
+    st.caption("Map source: the user's saved Scribble Maps map (Map ID r6OghBMTAp). The base layer is set to Google Hybrid; do not use 'Style Your Own Base Map' if it switches the map to the Scribble Maps/OSM style.")
 
-    st.subheader("Interactive administrative map")
-    st.write(
-        "Explore the historical 58-wilaya administrative layer associated with the candidate "
-        "zones in Appendix 2. This map is an independent interactive view and does not depend "
-        "on Scribble Maps embedding."
-    )
-    render_site_admin_map()
+    map_path = Path(__file__).parent / "assets" / "thesis_site_selection_map.png"
+    if map_path.exists():
+        with st.expander("View the original thesis map (Figure 2.1)"):
+            st.image(str(map_path), caption="Original Figure 2.1 from the 2025 thesis, retained for reference.", use_container_width=True)
 
-    st.warning(
-        "The four candidate zones were manually delineated in the thesis, but exact GIS "
-        "polygons or coordinates were not provided. The interactive map therefore highlights "
-        "the wilayas listed in Appendix 2 as an administrative reference; it does not recreate "
-        "the exact candidate-zone boundaries or the infrastructure lines in Figure 3.3. "
-        "Do not interpret the administrative outlines as the site polygons."
-    )
+    st.warning("The four candidate zones were manually delineated in the thesis. Their exact GIS polygons or coordinates were not provided. The interactive map displays the saved Scribble Maps drawing; it should not be interpreted as a newly verified GIS boundary dataset. Pipeline lines and labels should also be read according to the thesis limitations discussed in the infrastructure assessment.")
+    st.info("Administrative-boundary note: the 58-wilaya layer is shown as a historical 2025 geographical reference. The association between the four manually delineated zones and the listed wilayas is indicative; its compatibility with the zone boundaries has not been independently verified. Wilaya boundaries must not be interpreted as the exact limits of the candidate zones.")
     site_choice = st.selectbox("Explore a candidate site", sites["site"].tolist(), key="siting_site_detail")
     selected_site = sites.loc[sites["site"] == site_choice].iloc[0]
     a, b, c = st.columns(3)
@@ -139,7 +112,7 @@ elif page == "Renewable energy siting":
     st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Interactive weighting experiment")
-    st.write("Change the importance assigned to each criterion and see how the relative site ranking responds. The underlying thesis criterion scores remain fixed.")
+    st.write("Change the importance assigned to each criterion and see how the relative site ranking responds. The underlying thesis criterion scores remain fixed. The map above remains the geographical reference; the ranking table and chart below respond to your selected weights.")
     st.info("This is an exploratory weighted-score calculation, not a rerun of the thesis MCDA or EnergyPLAN. The published thesis totals and ranking above remain unchanged. Because the weights printed in Appendix 2 sum to 2.00 and the published totals cannot be reconstructed exactly from the displayed table, this explorer reports a separate weighted-average index on the original 50–100 score scale.")
 
     if st.button("Reset weights to thesis values", key="reset_siting_weights"):
@@ -171,9 +144,16 @@ elif page == "Renewable energy siting":
         result["Interactive weighted index"] = interactive_scores
         result = result.sort_values("Interactive weighted index", ascending=False).reset_index(drop=True)
         result["Interactive rank"] = range(1, len(result) + 1)
+        result["Rank change"] = result["Thesis rank"] - result["Interactive rank"]
         result = result.rename(columns={"score":"Thesis total score", "rank":"Thesis rank"})
-        st.caption(f"Current adjustable weight total: {weight_total:.2f}. Weights are normalised proportionally inside the weighted-average calculation; the original thesis weights remain unchanged in the source data.")
-        st.dataframe(result[["site", "region", "Thesis total score", "Thesis rank", "Interactive weighted index", "Interactive rank"]].round({"Interactive weighted index":2}), hide_index=True, use_container_width=True)
+        st.caption(f"Current adjustable weight total: {weight_total:.2f}. The calculation divides the weighted score by the sum of the selected weights, so the interactive index remains on the 50–100 scale. The original thesis weights and published totals remain unchanged.")
+        st.dataframe(result[["site", "region", "Thesis total score", "Thesis rank", "Interactive weighted index", "Interactive rank", "Rank change"]].round({"Interactive weighted index":2}), hide_index=True, use_container_width=True)
+        with st.expander("See the weights used in this experiment"):
+            weight_view = criteria[["criterion", "weight"]].copy()
+            weight_view["Selected weight"] = interactive_weights
+            weight_view["Share of selected total"] = [w / weight_total * 100 for w in interactive_weights]
+            weight_view = weight_view.rename(columns={"weight":"Original thesis weight"})
+            st.dataframe(weight_view.round({"Original thesis weight":2, "Selected weight":2, "Share of selected total":1}), hide_index=True, use_container_width=True)
         chart = px.bar(result, x="site", y="Interactive weighted index", color="Interactive rank", text="Interactive rank", title="Site ranking under your selected criteria weights", labels={"site":"Candidate site", "Interactive weighted index":"Weighted index (50–100)", "Interactive rank":"New rank"})
         chart.update_traces(textposition="outside")
         chart.update_yaxes(range=[45,105])
