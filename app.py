@@ -14,6 +14,45 @@ def load_data(name):
 
 exports = pd.DataFrame(load_data("export_scenarios.json"))
 criteria = pd.DataFrame(load_data("siting_criteria.json"))
+
+# Exact normalized scores and weights transcribed from the user's original MCDA Excel table.
+# The Excel matrix is the single source for the interactive weighted-sum calculation.
+mcda_weights = [0.30, 0.25, 0.20, 0.20, 0.15, 0.15, 0.15, 0.10, 0.10, 0.10, 0.10, 0.10, 0.05, 0.05]
+mcda_scores = [
+    [96.34146, 87.80488, 100.0, 50.0],
+    [75.38462, 50.0, 56.92308, 100.0],
+    [82.59505, 100.0, 94.42911, 50.0],
+    [57.84047, 100.0, 83.09228, 50.0],
+    [100.0, 50.0, 76.01754, 60.91691],
+    [63.04421, 100.0, 83.72216, 50.0],
+    [57.61896, 100.0, 95.48547, 50.0],
+    [73.39730, 100.0, 78.50094, 50.0],
+    [50.0, 100.0, 100.0, 50.0],
+    [100.0, 50.0, 50.27721, 50.29412],
+    [57.04846, 100.0, 50.0, 55.06608],
+    [100.0, 50.0, 50.0, 50.0],
+    [93.75, 50.0, 87.5, 100.0],
+    [88.30769, 50.0, 58.92308, 100.0],
+]
+mcda_criteria_names = [
+    "Annual Wind Average speed at 100 m height",
+    "Annual Solar Irradiation (GHI)",
+    "Proximity to Mediterranean Coast",
+    "Extent of Existing Natural Gas Infrastructure (H2 and E-Methane)",
+    "Available Land Area",
+    "Extent of Existing Road Network",
+    "Proximity to Export Point Italy (HVDC)",
+    "Proximity to Export Point Spain (HVDC)",
+    "Distance to Existing Electricity Grid",
+    "Environmental Protection Area distance",
+    "Local Unemployment Rate",
+    "Historical Rehabilitation Potential",
+    "Administrative Complexity (Number of Provinces)",
+    "Population Density",
+]
+criteria["criterion"] = mcda_criteria_names
+criteria["weight"] = mcda_weights
+criteria["scores"] = mcda_scores
 sites = pd.DataFrame(load_data("siting_sites.json"))
 
 st.title("Algeria Energy Transition Explorer")
@@ -79,36 +118,28 @@ elif page == "Renewable energy siting":
         with st.expander("View the original thesis map (Figure 2.1)"):
             st.image(str(map_path), caption="Original Figure 2.1 from the 2025 thesis, retained for reference.", use_container_width=True)
 
-    st.warning("The four candidate zones were manually delineated in the thesis. Their exact GIS polygons or coordinates were not provided. The interactive map displays the saved Scribble Maps drawing; it should not be interpreted as a newly verified GIS boundary dataset. Pipeline lines and labels should also be read according to the thesis limitations discussed in the infrastructure assessment.")
+    st.warning("The four candidate zones were manually delineated in the thesis. Their exact GIS polygons or coordinates were not provided. The interactive map displays the administrative reference layer and should not be interpreted as a newly verified GIS boundary dataset. Pipeline lines and labels should also be read according to the thesis limitations discussed in the infrastructure assessment.")
     st.info("Administrative-boundary note: the 58-wilaya layer is shown as a historical 2025 geographical reference. The association between the four manually delineated zones and the listed wilayas is indicative; its compatibility with the zone boundaries has not been independently verified. Wilaya boundaries must not be interpreted as the exact limits of the candidate zones.")
+
     site_choice = st.selectbox("Explore a candidate site", sites["site"].tolist(), key="siting_site_detail")
     selected_site = sites.loc[sites["site"] == site_choice].iloc[0]
-    a, b, c = st.columns(3)
-    a.metric("Thesis-reported total score", int(selected_site["score"]))
-    b.metric("Thesis-reported rank", int(selected_site["rank"]))
-    c.metric("Region", selected_site["region"])
-    st.write("**Provinces included:** " + ", ".join(selected_site["provinces"]))
-    st.caption("The detailed province lists reproduce Appendix 2. The main-text description of Site 02 is shorter; the appendix list is shown here.")
+    a, b = st.columns(2)
+    a.metric("Candidate zone", selected_site["site"])
+    b.metric("Region", selected_site["region"])
+    st.write("**Provinces listed in Appendix 2:** " + ", ".join(selected_site["provinces"]))
+    st.caption("The detailed province lists reproduce Appendix 2. The association is indicative and is not a verified GIS definition of the candidate-zone boundaries.")
 
-    st.subheader("Step 2 — Original MCDA assessment")
-    st.write("Fourteen indicators are assessed using Min–Max normalisation on a scale from 50 (least favourable) to 100 (most favourable). Reverse scoring is applied where lower values are preferred.")
-    score_matrix = pd.DataFrame({"Criterion":criteria["criterion"],"Original weight":criteria["weight"],"Scoring preference":criteria["direction"]})
+    st.subheader("Step 2 — Multi-criteria suitability assessment")
+    st.write("The 14 criterion scores and weights below reproduce the normalized-score matrix and weights in the original MCDA Excel calculation supplied for this dashboard. Scores use the thesis Min–Max scale from 50 (least favourable) to 100 (most favourable).")
+
+    score_matrix = pd.DataFrame({"Criterion": criteria["criterion"], "Thesis weight": criteria["weight"], "Scoring preference": criteria["direction"]})
     for i, site in sites.iterrows():
         score_matrix[site["site"]] = criteria["scores"].apply(lambda values: values[i])
-    st.markdown("**Original criterion scores — Appendix 2, Table 2.2**")
-    st.dataframe(score_matrix, hide_index=True, use_container_width=True)
+    with st.expander("View the criterion scores and weights from Appendix 2, Table 2.2"):
+        st.dataframe(score_matrix, hide_index=True, use_container_width=True)
 
-    st.subheader("Original thesis ranking")
-    ranked = sites.sort_values("rank")
-    fig = px.bar(ranked, x="site", y="score", text="score", title="Thesis-reported MCDA total scores",
-                 labels={"site":"Candidate site","score":"Reported total score"})
-    fig.update_traces(textposition="outside")
-    fig.update_yaxes(range=[0,180])
-    st.plotly_chart(fig, use_container_width=True)
-
-    st.subheader("Interactive weighting experiment")
-    st.write("Change the importance assigned to each criterion and see how the relative site ranking responds. The underlying thesis criterion scores remain fixed. The map above remains the geographical reference; the ranking table and chart below respond to your selected weights.")
-    st.info("This is an exploratory weighted-score calculation, not a rerun of the thesis MCDA or EnergyPLAN. The published thesis totals and ranking above remain unchanged. Because the weights printed in Appendix 2 sum to 2.00 and the published totals cannot be reconstructed exactly from the displayed table, this explorer reports a separate weighted-average index on the original 50–100 score scale.")
+    st.subheader("Adjust the criteria weights")
+    st.write("Change the relative importance of the 14 criteria. The tool recalculates the weighted sum and ranking for all four candidate sites. The weights are applied exactly as entered; they are not automatically rescaled or converted into percentages.")
 
     if st.button("Reset weights to thesis values", key="reset_siting_weights"):
         for i, item in criteria.iterrows():
@@ -116,72 +147,84 @@ elif page == "Renewable energy siting":
         st.rerun()
 
     weight_cols = st.columns(2)
-    interactive_weights = []
+    entered_weights = []
     for i, item in criteria.iterrows():
         with weight_cols[i % 2]:
             value = st.slider(
                 item["criterion"], min_value=0.0, max_value=0.5,
                 value=float(item["weight"]), step=0.01,
-                key=f"siting_weight_{i}", help=f"Original thesis weight: {item['weight']:.2f}. {item['direction']}"
+                key=f"siting_weight_{i}", help=f"Thesis weight: {item['weight']:.2f}. {item['direction']}"
             )
-        interactive_weights.append(value)
+        entered_weights.append(value)
 
-    weight_total = sum(interactive_weights)
-    if weight_total <= 0:
+    entered_total = sum(entered_weights)
+    thesis_weight_total = float(criteria["weight"].sum())
+    if entered_total <= 0:
         st.warning("Increase at least one criterion weight to calculate a ranking.")
     else:
+        applied_weights = entered_weights
         score_values = [[float(v) for v in row] for row in criteria["scores"]]
-        interactive_scores = []
+        weighted_scores = []
         for site_index in range(len(sites)):
-            weighted_score = sum(interactive_weights[i] * score_values[i][site_index] for i in range(len(criteria))) / weight_total
-            interactive_scores.append(weighted_score)
-        result = sites[["site", "region", "score", "rank"]].copy()
-        result["Interactive weighted index"] = interactive_scores
-        result = result.sort_values("Interactive weighted index", ascending=False).reset_index(drop=True)
-        result["Interactive rank"] = range(1, len(result) + 1)
-        result = result.rename(columns={"score":"Thesis total score", "rank":"Thesis rank"})
-        result["Rank change"] = result["Thesis rank"] - result["Interactive rank"]
-        st.caption(f"Current adjustable weight total: {weight_total:.2f}. The calculation divides the weighted score by the sum of the selected weights, so the interactive index remains on the 50–100 scale. The original thesis weights and published totals remain unchanged.")
-        st.dataframe(result[["site", "region", "Thesis total score", "Thesis rank", "Interactive weighted index", "Interactive rank", "Rank change"]].round({"Interactive weighted index":2}), hide_index=True, use_container_width=True)
-        with st.expander("See the weights used in this experiment"):
-            weight_view = criteria[["criterion", "weight"]].copy()
-            weight_view["Selected weight"] = interactive_weights
-            weight_view["Share of selected total"] = [w / weight_total * 100 for w in interactive_weights]
-            weight_view = weight_view.rename(columns={"weight":"Original thesis weight"})
-            st.dataframe(weight_view.round({"Original thesis weight":2, "Selected weight":2, "Share of selected total":1}), hide_index=True, use_container_width=True)
-        chart = px.bar(result, x="site", y="Interactive weighted index", color="Interactive rank", text="Interactive rank", title="Site ranking under your selected criteria weights", labels={"site":"Candidate site", "Interactive weighted index":"Weighted index (50–100)", "Interactive rank":"New rank"})
+            weighted_score = sum(applied_weights[i] * score_values[i][site_index] for i in range(len(criteria)))
+            weighted_scores.append(weighted_score)
+
+        result = sites[["site", "region"]].copy()
+        result["Weighted score"] = weighted_scores
+        result = result.sort_values(["Weighted score", "site"], ascending=[False, True]).reset_index(drop=True)
+        result["Rank"] = range(1, len(result) + 1)
+        st.dataframe(result[["Rank", "site", "region", "Weighted score"]].round({"Weighted score": 2}), hide_index=True, use_container_width=True)
+        if abs(entered_total - thesis_weight_total) < 1e-9:
+            st.caption("With the original Excel weights, the calculated totals are 156.08 (Site 01), 161.34 (Site 02), 158.22 (Site 03) and 119.67 (Site 04). These reproduce the Excel weighted-sum results and ranks 3, 1, 2 and 4.")
+        else:
+            st.caption(f"Current weight total: {entered_total:.2f}. The total changes when you adjust weights; this is intentional because the tool applies the entered coefficients directly.")
+
+        chart = px.bar(
+            result.sort_values("Rank"), x="site", y="Weighted score", text="Rank",
+            title="Candidate-site ranking under the selected criteria weights",
+            labels={"site": "Candidate site", "Weighted score": "Weighted score", "Rank": "Rank"}
+        )
         chart.update_traces(textposition="outside")
-        chart.update_yaxes(range=[45,105])
+        chart.update_yaxes(range=[0, 210])
         st.plotly_chart(chart, use_container_width=True)
+
         winner = result.iloc[0]
-        st.success(f"Under the current weighting choices, {winner['site']} ranks first with an interactive index of {winner['Interactive weighted index']:.2f}.")
+        st.success(f"Under the current weighting choices, {winner['site']} ranks first with a weighted score of {winner['Weighted score']:.2f}.")
+
+        with st.expander("View the weights applied in this calculation"):
+            weight_view = criteria[["criterion", "weight"]].copy()
+            weight_view["Selected slider value"] = entered_weights
+            weight_view["Applied weight"] = applied_weights
+            weight_view = weight_view.rename(columns={"weight": "Thesis weight"})
+            st.dataframe(weight_view.round({"Thesis weight": 3, "Selected slider value": 3, "Applied weight": 3}), hide_index=True, use_container_width=True)
+            st.caption(f"Applied weights total: {sum(applied_weights):.2f}. No automatic normalization is applied.")
 
     st.subheader("Explore an individual criterion")
     selected = st.selectbox("Choose an indicator", criteria["criterion"].tolist(), key="siting_criterion_detail")
     item = criteria.loc[criteria["criterion"] == selected].iloc[0]
-    rows = [{"Candidate site":sites.iloc[i]["site"],"Reported raw value":item["raw"][i],"Reported score":item["scores"][i]} for i in range(len(sites))]
-    st.write(f"**Original weight:** {item['weight']:.2f}  |  **Scoring preference:** {item['direction']}")
+    rows = [{"Candidate site": sites.iloc[i]["site"], "Reported raw value": item["raw"][i], "Normalised criterion score": item["scores"][i]} for i in range(len(sites))]
+    st.write(f"**Thesis weight:** {item['weight']:.2f}  |  **Scoring preference:** {item['direction']}")
     st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
     st.subheader("Scoring equations")
     st.latex(r"Score(x)=50+\left(\frac{x-x_{min}}{x_{max}-x_{min}}\right)\times 50")
     st.latex(r"Score_{reverse}(x)=100-\left(\frac{x-x_{min}}{x_{max}-x_{min}}\right)\times 50")
+    st.latex(r"Weighted\ score=\sum_i (weight_i\times criterion\ score_i)")
 
     with st.expander("Methodological notes and limitations reported in Appendix 2"):
         st.markdown("""
         - Wind and solar data are attributed to DTU Wind Energy & World Bank Group (2025) and World Bank Group (2025).
         - Distances, except for roads, are estimated as straight-line (Euclidean) values and do not reflect topographical terrain.
         - Desalination, grid connection and HVDC export proximity were prioritised because of their role in hydrogen production and electricity exports.
-        - For Site 01 and Site 04, gas-infrastructure values of −200 and −500 represent approximate distances to the nearest connection point because no pipelines cross those zones. For Sites 02 and 03, values represent existing gas-pipeline length within the site boundaries.
+        - For Site 01 and Site 04, gas-infrastructure values of −200 and −500 represent approximate distances to the nearest connection point because no pipelines cross those zones. For Sites 02 and 03, the values represent existing gas-pipeline length within the site boundaries.
         - Road network coverage is based on the extent of major roads passing through the sites.
         - Electricity grid availability was qualitatively assessed from regional grid maps.
         - Unemployment and population density are based on 2019 provincial-level averages.
         - Environmental suitability is based on distance from protected or ecologically sensitive areas.
         """)
-        st.warning("Appendix 2 Table 2.1 reports weights that sum to 2.00, not 1.00. The original weights and thesis-reported totals are preserved without normalisation. Some raw-value unit labels in the table appear misaligned or unclear, so ambiguous units are flagged rather than silently corrected.")
+        st.info("The weights in the supplied Excel calculation sum to 2.00. They are importance coefficients, not percentages, and are intentionally preserved without normalization. The electricity-grid-distance scores (50 or 100) and historical-rehabilitation scores (100 for Site 01; 50 for Sites 02–04) are assumption-based inputs in the original calculation. They are retained as supplied.")
 
-    st.success("Site 02 is the highest-ranked candidate in the thesis, with a reported score of 161 and rank 1.")
-    st.caption("The map is the original thesis figure. The site selector and weighting experiment are interactive; exact clickable geographic polygons require the original GIS boundaries or site-coordinate data.")
+    st.caption("This interactive MCDA is a sensitivity analysis of the thesis criteria and weights. It does not rerun EnergyPLAN. Exact clickable site polygons would require original GIS boundaries or site-coordinate data, which were not provided in the thesis.")
 
 elif page == "Algeria's energy system":
     st.header("Algeria's energy system")
