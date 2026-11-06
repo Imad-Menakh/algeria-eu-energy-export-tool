@@ -108,9 +108,6 @@ def render_site_admin_map():
               "and the GIS User Community"),
         name="Satellite imagery", overlay=False, control=True,
     ).add_to(m)
-    folium.TileLayer(
-        "OpenStreetMap", name="Road map", overlay=False, control=True,
-    ).add_to(m)
     folium.GeoJson(
         geojson, name="Historical 58-wilaya administrative reference",
         style_function=_style,
