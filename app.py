@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from site_selection_map_component import render_site_admin_map
 
 st.set_page_config(page_title="Algeria Energy Transition Explorer", page_icon="⚡", layout="wide")
 DATA = Path(__file__).parent / "data"
@@ -69,22 +70,49 @@ elif page == "Renewable energy siting":
 
     st.subheader("Step 1 — Candidate development zones")
     st.write("The thesis manually delineates four large candidate zones after excluding mountainous and steep-slope areas, high-density urban zones, northern Algeria, small or isolated areas and protected regions.")
-    st.markdown("**Interactive map — Google Maps hybrid view**")
-    st.write("This embedded Scribble Maps view preserves the Google hybrid satellite/map background and the map overlays, including the Western Sahara boundary as displayed in the saved map. Use the map controls to zoom and explore the candidate zones and infrastructure.")
-    scribble_map_url = (
-        "https://widgets.scribblemaps.com/sm/?d&dv&cv&z&l&gc&af&mc&svc&ssvce"
-        "&lat=27.240154501&lng=-0.9121612&vz=5&type=hybrid&ti&s"
-        "&width=900&height=650&id=r6OghBMTAp"
+
+    assets_dir = Path(__file__).parent / "assets"
+    zones_map_path = assets_dir / "thesis_site_selection_map.png"
+    if zones_map_path.exists():
+        st.image(
+            str(zones_map_path),
+            caption="Candidate development zones — thesis Figure 2.1 (2025).",
+            use_container_width=True,
+        )
+
+    st.subheader("Strategic infrastructure reference — thesis Figure 3.3")
+    infra_map_path = assets_dir / "thesis_infrastructure_map.png"
+    if infra_map_path.exists():
+        st.image(
+            str(infra_map_path),
+            caption="Strategic infrastructure layout for Algeria’s 2050 energy transition — thesis Figure 3.3.",
+            use_container_width=True,
+        )
+    st.warning(
+        "This image reproduces the infrastructure layout presented in the 2025 thesis; "
+        "it is a scenario reference, not a verified map of infrastructure currently in operation. "
+        "The thesis describes the natural-gas network as existing infrastructure, but the GALSI "
+        "project was not operational. Its depiction must not be interpreted as an operating "
+        "Algeria–Sardinia pipeline. Proposed HVDC and desalinated-water routes are also future "
+        "infrastructure, not completed assets. The map should be corrected before being used "
+        "to claim current operational pipeline connections."
     )
-    st.components.v1.iframe(scribble_map_url, height=680, scrolling=True)
-    st.caption("Map source: the user's saved Scribble Maps map (Map ID r6OghBMTAp). The base layer is set to Google Hybrid; do not use 'Style Your Own Base Map' if it switches the map to the Scribble Maps/OSM style.")
 
-    map_path = Path(__file__).parent / "assets" / "thesis_site_selection_map.png"
-    if map_path.exists():
-        with st.expander("View the original thesis map (Figure 2.1)"):
-            st.image(str(map_path), caption="Original Figure 2.1 from the 2025 thesis, retained for reference.", use_container_width=True)
+    st.subheader("Interactive administrative map")
+    st.write(
+        "Explore the historical 58-wilaya administrative layer associated with the candidate "
+        "zones in Appendix 2. This map is an independent interactive view and does not depend "
+        "on Scribble Maps embedding."
+    )
+    render_site_admin_map()
 
-    st.warning("The four candidate zones were manually delineated in the thesis. Their exact GIS polygons or coordinates were not provided. The interactive map displays the saved Scribble Maps drawing; it should not be interpreted as a newly verified GIS boundary dataset. Pipeline lines and labels should also be read according to the thesis limitations discussed in the infrastructure assessment.")
+    st.warning(
+        "The four candidate zones were manually delineated in the thesis, but exact GIS "
+        "polygons or coordinates were not provided. The interactive map therefore highlights "
+        "the wilayas listed in Appendix 2 as an administrative reference; it does not recreate "
+        "the exact candidate-zone boundaries or the infrastructure lines in Figure 3.3. "
+        "Do not interpret the administrative outlines as the site polygons."
+    )
     site_choice = st.selectbox("Explore a candidate site", sites["site"].tolist(), key="siting_site_detail")
     selected_site = sites.loc[sites["site"] == site_choice].iloc[0]
     a, b, c = st.columns(3)
