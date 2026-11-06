@@ -63,7 +63,7 @@ pages = [
     "Research overview", "Four assessment dimensions", "Renewable energy siting",
     "Algeria's energy system", "Technical assessment", "Five-scenario comparison", "Export scenario comparison", "Economic assessment",
     "Social assessment", "Environmental assessment", "Interactive scenario explorer",
-    "Methodology and sources"
+    "Methodology and sources", "Thesis limitations and critical considerations"
 ]
 page = st.sidebar.radio("Research modules", pages)
 
@@ -456,20 +456,6 @@ elif page == "Economic assessment":
         st.write("LCOX = incremental annual system cost ÷ net annual export energy delivered.")
         st.caption("The final thesis is the authoritative source for published results. Supporting workbooks help explain calculations and discrepancies; they do not silently overwrite thesis values.")
 
-    st.subheader("E-methane export — supplementary pipeline capacity note")
-    st.write("The thesis assumes that existing natural gas infrastructure can be used to transport e-methane without additional transport investment. A supplementary screening check compares the e-methane export target with the nominal Algeria–Europe pipeline capacity figures used in the thesis.")
-    capacity_view = pd.DataFrame([
-        {"Indicator":"TransMed nominal capacity (thesis reference)","Value":"33.5 bcm/year"},
-        {"Indicator":"Medgaz nominal capacity (thesis reference)","Value":"12.0 bcm/year"},
-        {"Indicator":"Combined nominal capacity","Value":"45.5 bcm/year"},
-        {"Indicator":"Energy conversion used in thesis hydrogen pipeline table","Value":"10 TWh per bcm"},
-        {"Indicator":"Indicative combined energy capacity","Value":"455 TWh/year"},
-        {"Indicator":"Thesis e-methane export target","Value":"574 TWh/year"},
-        {"Indicator":"Indicative additional capacity required","Value":"119 TWh/year (11.9 bcm/year)"},
-    ])
-    st.dataframe(capacity_view, hide_index=True, use_container_width=True)
-    st.warning("This is a supplementary capacity-screening calculation, not a pipeline engineering study. The 45.5 bcm/year is nominal combined capacity, not necessarily capacity available exclusively for e-methane: conventional natural gas exports may already use part of it. Meeting the full 574 TWh/year target may therefore require expansion of existing pipelines, new transport infrastructure, or reallocation of existing flows. The thesis's reported e-methane revenue, costs, net profit and LCOX are retained unchanged and should be read under the original transport assumption.")
-    st.caption("Basis: thesis pipeline capacity figures for TransMed and Medgaz and the thesis's 10 TWh/bcm conversion scale; the 119 TWh/year shortfall is a supplementary arithmetic comparison, not a revised thesis result.")
 
 elif page == "Social assessment":
     st.header("Social assessment")
@@ -560,7 +546,7 @@ elif page == "Interactive scenario explorer":
     c.metric("Indicative net profit",f"€{profit:,.3f}bn/year")
     st.warning("Financial sensitivity only. This does not rerun EnergyPLAN or recalculate hourly generation, demand, storage, curtailment, transmission losses or physical system feasibility. Changing export volume does not demonstrate that the energy system can deliver it.")
 
-else:
+elif page == "Methodology and sources":
     st.header("Methodology and sources")
     st.markdown("""
     **Modelling approach:** EnergyPLAN 16.3 hourly energy-system modelling; LUT-DEMAND for 2050 demand; PV profiles from PVGIS; technical, economic, social and environmental assessment.
@@ -573,6 +559,49 @@ else:
     Discrepancies are documented. Supporting workbooks do not silently overwrite thesis reference values.
     """)
     st.write("For the siting assessment, the principal reference is Appendix 2, including Tables 2.1 and 2.2 and Figure 2.1.")
+
+elif page == "Thesis limitations and critical considerations":
+    st.header("Thesis limitations and critical considerations")
+    st.write("This section brings together qualifications that affect how the thesis results should be interpreted. It separates information documented in the thesis from additional observations identified during our review.")
+
+    st.subheader("1. Technical modelling")
+    st.markdown("**Interpretation of the thesis results**")
+    st.write("The EnergyPLAN 16.3 scenarios are modelled energy-system configurations for 2050. Their results describe the performance of the modelled scenarios under the stated inputs and assumptions; they should not be read as proof that the systems have already been implemented or that every technical, regulatory and operational condition for implementation has been resolved.")
+    st.markdown("**Additional critical consideration from our review**")
+    st.write("The dashboard's interactive scenario explorer changes financial assumptions only. It does not rerun EnergyPLAN or recalculate hourly generation, storage, curtailment, transmission losses or physical system feasibility.")
+
+    st.subheader("2. Export infrastructure")
+    st.markdown("**E-methane pipeline-capacity limitation — thesis figures**")
+    st.write("The thesis reports a combined nominal capacity of 45.5 bcm/year for the operational TransMed and Medgaz pipelines (Table 4, p. 24). Using the thesis conversion of 10 TWh per bcm (Table 17, p. 83), this corresponds to 455 TWh/year. However, the 2050 e-methane scenario assumes exports of 574 TWh/year (Section 4.1.4), exceeding this capacity by 119 TWh/year, or approximately 11.9 bcm/year.")
+    st.warning("The thesis does not include the additional pipeline capacity or investment costs that may be required to transport this difference. Consequently, its reported e-methane export costs and profitability do not account for the potential need to expand or construct pipeline infrastructure. This comparison is a capacity screening, not a pipeline engineering study.")
+    st.caption("References: thesis Table 4 (p. 24), Table 17 (p. 83) and Section 4.1.4. The 119 TWh/year difference is calculated from the thesis figures; it is not a separately modelled thesis result.")
+    st.markdown("**Additional critical consideration from our review**")
+    st.write("The pipeline-capacity comparison is a high-level screening based on the thesis's stated capacities and conversion. It does not establish the engineering suitability, operating conditions or actual availability of the pipelines for the full e-methane export volume.")
+
+    st.subheader("3. Economic assessment")
+    st.markdown("**Assumptions and interpretation**")
+    st.write("The reported revenues and profitability depend on the market prices, export volumes, cost estimates and infrastructure assumptions used in the thesis. They should therefore be interpreted as scenario-based results rather than guaranteed future commercial outcomes.")
+    st.write("The thesis uses separate cost calculations for reported net profit and LCOX. The export cost used in the net-profit calculation is not interchangeable with the incremental system cost used for LCOX.")
+    st.markdown("**Additional critical consideration from our review**")
+    st.write("The assumed allocation of submarine infrastructure costs affects the results: the thesis allocates 50% of submarine infrastructure costs to Algeria for the HVDC and hydrogen pathways, with the remaining 50% assumed to be financed by Italy and Spain. This is a modelling assumption, not confirmation of an agreed financing arrangement. E-methane uses the existing gas-pipeline assumption, subject to the capacity limitation described above.")
+
+    st.subheader("4. Renewable-energy site selection")
+    st.markdown("**Limitations documented in the thesis material**")
+    st.write("The four candidate renewable-energy zones were manually delineated. Precise GIS polygons or coordinates for the zones are not provided in the thesis material used for this dashboard, so their exact boundaries cannot be independently reproduced from those sources.")
+    st.markdown("**Additional critical considerations from our review**")
+    st.write("Some MCDA inputs are assumption-based, including the distance-to-grid scoring categories and the historical rehabilitation-potential scores. The original criterion weights sum to 2.00; they are retained as importance coefficients rather than silently normalised to 1.00. The weighted scores should be interpreted in light of these choices and the underlying data limitations.")
+
+    st.subheader("5. Social assessment")
+    st.markdown("**Interpretation of the thesis results**")
+    st.write("Employment figures are modelled estimates, not observed or guaranteed jobs. Permanent jobs represent ongoing positions, while temporary employment is expressed in job-years; these measures should not be added together as if they were the same unit. Water-access improvements, pipeline delivery and regional-development benefits are projections or expected co-benefits that depend on implementation.")
+    st.markdown("**Additional critical consideration from our review**")
+    st.write("The realisation of social benefits depends on the timing and geographical reach of water and electricity infrastructure, local workforce development, public-service capacity and meaningful engagement with affected communities.")
+
+    st.subheader("6. Environmental assessment")
+    st.markdown("**Interpretation of the thesis results**")
+    st.write("The land-use figures estimate solar PV land requirements under the thesis's stated assumptions; they do not represent the complete land footprint of all energy, transmission, water and export infrastructure. Water-demand estimates also depend on the scope and assumptions used in the thesis tables.")
+    st.markdown("**Additional critical consideration from our review**")
+    st.write("The negative e-methane CO₂ balance reported by the thesis (−116.18 Mt) reflects its accounting treatment, including allocation of captured CO₂ to importing countries. It should not be interpreted on its own as proof that the full e-methane value chain is lifecycle net-negative. Methane leakage and non-CO₂ greenhouse-gas emissions also remain relevant to the overall environmental assessment.")
 
 st.divider()
 st.caption("Reference: Imadeddine Menakh (2025), *Powering EU? – Energy scenarios for exporting electricity, green hydrogen and e-methane from Algeria to Europe*.")
