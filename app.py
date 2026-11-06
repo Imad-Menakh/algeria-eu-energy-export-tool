@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import streamlit as st
+from site_selection_map_component import render_site_admin_map
 
 st.set_page_config(page_title="Algeria Energy Transition Explorer", page_icon="⚡", layout="wide")
 DATA = Path(__file__).parent / "data"
@@ -69,15 +70,9 @@ elif page == "Renewable energy siting":
 
     st.subheader("Step 1 — Candidate development zones")
     st.write("The thesis manually delineates four large candidate zones after excluding mountainous and steep-slope areas, high-density urban zones, northern Algeria, small or isolated areas and protected regions.")
-    st.markdown("**Interactive map — Google Maps hybrid view**")
-    st.write("This embedded Scribble Maps view preserves the Google hybrid satellite/map background and the map overlays, including the Western Sahara boundary as displayed in the saved map. Use the map controls to zoom and explore the candidate zones and infrastructure.")
-    scribble_map_url = (
-        "https://widgets.scribblemaps.com/sm/?d&dv&cv&z&l&gc&af&mc&svc&ssvce"
-        "&lat=27.240154501&lng=-0.9121612&vz=5&type=hybrid&ti&s"
-        "&width=900&height=650&id=r6OghBMTAp"
-    )
-    st.components.v1.iframe(scribble_map_url, height=680, scrolling=True)
-    st.caption("Map source: the user's saved Scribble Maps map (Map ID r6OghBMTAp). The base layer is set to Google Hybrid; do not use 'Style Your Own Base Map' if it switches the map to the Scribble Maps/OSM style.")
+    st.markdown("**Interactive administrative reference map — satellite imagery**")
+    st.write("Explore the historical 58-wilaya administrative layer over satellite imagery. The wilaya associations are indicative geographical references only; they are not the exact boundaries of the four manually delineated candidate zones.")
+    render_site_admin_map()
 
     map_path = Path(__file__).parent / "assets" / "thesis_site_selection_map.png"
     if map_path.exists():
@@ -144,8 +139,8 @@ elif page == "Renewable energy siting":
         result["Interactive weighted index"] = interactive_scores
         result = result.sort_values("Interactive weighted index", ascending=False).reset_index(drop=True)
         result["Interactive rank"] = range(1, len(result) + 1)
-        result["Rank change"] = result["Thesis rank"] - result["Interactive rank"]
         result = result.rename(columns={"score":"Thesis total score", "rank":"Thesis rank"})
+        result["Rank change"] = result["Thesis rank"] - result["Interactive rank"]
         st.caption(f"Current adjustable weight total: {weight_total:.2f}. The calculation divides the weighted score by the sum of the selected weights, so the interactive index remains on the 50–100 scale. The original thesis weights and published totals remain unchanged.")
         st.dataframe(result[["site", "region", "Thesis total score", "Thesis rank", "Interactive weighted index", "Interactive rank", "Rank change"]].round({"Interactive weighted index":2}), hide_index=True, use_container_width=True)
         with st.expander("See the weights used in this experiment"):
