@@ -3,7 +3,6 @@ from pathlib import Path
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-from site_selection_map_component import render_site_admin_map
 
 st.set_page_config(page_title="Algeria Energy Transition Explorer", page_icon="⚡", layout="wide")
 DATA = Path(__file__).parent / "data"
@@ -14,45 +13,6 @@ def load_data(name):
 
 exports = pd.DataFrame(load_data("export_scenarios.json"))
 criteria = pd.DataFrame(load_data("siting_criteria.json"))
-
-# Exact normalized scores and weights transcribed from the user's original MCDA Excel table.
-# The Excel matrix is the single source for the interactive weighted-sum calculation.
-mcda_weights = [0.30, 0.25, 0.20, 0.20, 0.15, 0.15, 0.15, 0.10, 0.10, 0.10, 0.10, 0.10, 0.05, 0.05]
-mcda_scores = [
-    [96.34146, 87.80488, 100.0, 50.0],
-    [75.38462, 50.0, 56.92308, 100.0],
-    [82.59505, 100.0, 94.42911, 50.0],
-    [57.84047, 100.0, 83.09228, 50.0],
-    [100.0, 50.0, 76.01754, 60.91691],
-    [63.04421, 100.0, 83.72216, 50.0],
-    [57.61896, 100.0, 95.48547, 50.0],
-    [73.39730, 100.0, 78.50094, 50.0],
-    [50.0, 100.0, 100.0, 50.0],
-    [100.0, 50.0, 50.27721, 50.29412],
-    [57.04846, 100.0, 50.0, 55.06608],
-    [100.0, 50.0, 50.0, 50.0],
-    [93.75, 50.0, 87.5, 100.0],
-    [88.30769, 50.0, 58.92308, 100.0],
-]
-mcda_criteria_names = [
-    "Annual Wind Average speed at 100 m height",
-    "Annual Solar Irradiation (GHI)",
-    "Proximity to Mediterranean Coast",
-    "Extent of Existing Natural Gas Infrastructure (H2 and E-Methane)",
-    "Available Land Area",
-    "Extent of Existing Road Network",
-    "Proximity to Export Point Italy (HVDC)",
-    "Proximity to Export Point Spain (HVDC)",
-    "Distance to Existing Electricity Grid",
-    "Environmental Protection Area distance",
-    "Local Unemployment Rate",
-    "Historical Rehabilitation Potential",
-    "Administrative Complexity (Number of Provinces)",
-    "Population Density",
-]
-criteria["criterion"] = mcda_criteria_names
-criteria["weight"] = mcda_weights
-criteria["scores"] = mcda_scores
 sites = pd.DataFrame(load_data("siting_sites.json"))
 
 st.title("Algeria Energy Transition Explorer")
@@ -60,78 +20,131 @@ st.caption("An interactive presentation of the findings of *Powering EU?* (2025)
 st.info("The final thesis is the primary reference for published results. Interactive sensitivities are separate and do not replace EnergyPLAN modelling.")
 
 pages = [
-    "Research overview",
-    "Scenario comparison",
-    "Renewable energy siting",
-    "Technical assessment",
-    "Social assessment",
-    "Environmental assessment",
-    "Interactive scenario explorer",
-    "Methodology and sources",
-    "Thesis limitations and critical considerations",
-    "Future development",
+    "Research overview", "Four assessment dimensions", "Renewable energy siting",
+    "Algeria's energy system", "Technical assessment", "Five-scenario comparison", "Export scenario comparison", "Economic assessment",
+    "Social assessment", "Environmental assessment", "Interactive scenario explorer",
+    "Methodology and sources"
 ]
 page = st.sidebar.radio("Research modules", pages)
 
 if page == "Research overview":
     st.header("Research overview")
-    st.write("The thesis investigates how Algeria could transition towards a 100% renewable energy system by 2050 while potentially supplying energy to Europe through three export pathways: electricity, green hydrogen and e-methane.")
+    st.write(
+        "The thesis investigates how Algeria could transition towards a 100% renewable "
+        "energy system by 2050 while potentially supplying energy to Europe through three "
+        "export pathways: electricity, green hydrogen and e-methane."
+    )
+
     st.subheader("Research objective")
-    st.write("The research compares a domestic renewable-energy pathway with three export-oriented pathways. It assesses their energy-system configurations and considers their technical, economic, social and environmental implications.")
+    st.write(
+        "The research compares a domestic renewable-energy pathway with three "
+        "export-oriented pathways. It assesses their energy-system configurations and "
+        "considers their technical, economic, social and environmental implications."
+    )
+
     st.subheader("Research questions")
     st.write("To achieve its objectives, the thesis investigates three main research questions:")
-    st.markdown("""
-    **1. Technical potential and infrastructure**  
-    What is Algeria's potential to export renewable electricity, green hydrogen and e-methane to Europe, and what technical and infrastructure requirements would these pathways involve?
+    st.markdown(
+        "**1. Technical potential and infrastructure**  \n"
+        "What is the potential for Algeria to export renewable electricity, green hydrogen "
+        "and e-methane to Europe, and what are the key technical and infrastructural "
+        "requirements for enabling these exports?"
+    )
+    st.markdown(
+        "**2. Economic competitiveness**  \n"
+        "How do the economic costs and benefits of exporting these renewable energy "
+        "carriers compare with one another and with Algeria's current fossil-fuel-based "
+        "export system?"
+    )
+    st.markdown(
+        "**3. Social and environmental benefits**  \n"
+        "What are the potential social and environmental benefits of transitioning to "
+        "renewable energy exports for Algeria's local communities and broader society?"
+    )
 
-    **2. Economic competitiveness**  
-    How do the costs and economic benefits of the three export pathways compare with one another and with Algeria's existing fossil-fuel-based export system?
-
-    **3. Social and environmental implications**  
-    What potential social and environmental benefits could renewable energy exports bring to Algerian communities and society more broadly?
-    """)
     st.subheader("Four dimensions considered in the research")
-    st.markdown("""
-    - **Technical:** energy-system configuration, renewable generation, storage, energy balances and export infrastructure.
-    - **Economic:** investment and system costs, export revenues, profitability and levelised cost of export (LCOX).
-    - **Social:** employment, water access, regional equity and socioeconomic development.
-    - **Environmental:** land requirements, energy-related water demand and emissions.
-    """)
-    st.info("These questions guide the Technical Assessment, Scenario Comparison, Social Assessment and Environmental Assessment. The dashboard presents the thesis findings and distinguishes them from additional calculations or interpretations.")
+    st.write(
+        "The thesis approaches these questions by evaluating the different pathways "
+        "across four complementary dimensions:"
+    )
+    cols = st.columns(4)
+    dimensions = [
+        ("Technical", "Energy-system configuration, renewable generation, storage, energy balances and export infrastructure."),
+        ("Economic", "Investment and system costs, export revenues, profitability and levelised cost of export (LCOX)."),
+        ("Social", "Employment, water access, regional equity and socioeconomic development."),
+        ("Environmental", "Land requirements, energy-related water demand and emissions."),
+    ]
+    for col, (name, description) in zip(cols, dimensions):
+        with col:
+            st.markdown(f"**{name}**")
+            st.write(description)
 
     st.subheader("The five scenarios and their purpose")
-    scenario_overview = pd.DataFrame([
-        {"Scenario": "Algeria 2019 baseline", "Purpose": "Historical reference for Algeria's energy system"},
-        {"Scenario": "2050 Domestic Base", "Purpose": "100% renewable system designed to meet domestic demand"},
-        {"Scenario": "2050 Electricity Export", "Purpose": "Domestic transition plus electricity exports through HVDC"},
-        {"Scenario": "2050 Green Hydrogen Export", "Purpose": "Domestic transition plus green hydrogen exports"},
-        {"Scenario": "2050 E-methane Export", "Purpose": "Domestic transition plus e-methane exports"},
-    ])
-    st.dataframe(scenario_overview, hide_index=True, use_container_width=True)
+    st.write(
+        "The thesis examines five scenarios to compare Algeria's existing energy system "
+        "with different possible configurations for 2050."
+    )
+    scenarios = [
+        ("Algeria 2019 — Baseline", "Represents the existing energy system and provides the reference point for the transition scenarios."),
+        ("2050 — Domestic Base", "Examines a 100% renewable energy system designed to meet Algeria's projected domestic energy demand, without an additional energy-export pathway."),
+        ("2050 — Electricity Export", "Assesses a renewable energy system that meets domestic demand while exporting electricity to Europe through high-voltage direct-current (HVDC) interconnections."),
+        ("2050 — Green Hydrogen Export", "Examines the production of green hydrogen using renewable electricity, alongside domestic energy supply, for export to Europe."),
+        ("2050 — E-methane Export", "Assesses the production of synthetic methane using renewable hydrogen and captured carbon dioxide, alongside domestic energy supply, for export to Europe."),
+    ]
+    scenario_cols = st.columns(5)
+    for col, (name, purpose) in zip(scenario_cols, scenarios):
+        with col:
+            st.markdown(f"**{name}**")
+            st.caption(purpose)
+    st.info(
+        "Together, these scenarios allow the thesis to compare the implications of "
+        "prioritising domestic renewable-energy supply with those of developing different "
+        "energy-export pathways."
+    )
 
     st.subheader("Final energy demand: domestic requirement")
-    st.write("The thesis reports final energy demand for Algeria's domestic use. The 2050 export scenarios retain this domestic demand requirement; the energy produced for export is additional to it.")
-    demand_df = pd.DataFrame([
-        {
-            "Period": "2019",
-            "Scenario(s)": "Algeria 2019 baseline",
-            "Domestic final energy demand (TWh/year)": 465.95,
-            "Reference": "Thesis Table 6, p. 63",
-        },
-        {
-            "Period": "2050",
-            "Scenario(s)": "Domestic Base; Electricity Export; Green Hydrogen Export; E-methane Export",
-            "Domestic final energy demand (TWh/year)": 908.72,
-            "Reference": "Same domestic demand assumption across all four 2050 scenarios",
-        },
+    st.write(
+        "An important distinction in the thesis is between domestic final energy demand "
+        "and the additional energy produced for export."
+    )
+    demand = pd.DataFrame([
+        {"Period": "2019", "Scenario(s)": "Algeria 2019 Baseline", "Domestic final energy demand": "465.95 TWh/year"},
+        {"Period": "2050", "Scenario(s)": "Domestic Base, Electricity Export, Green Hydrogen Export and E-methane Export", "Domestic final energy demand": "908.72 TWh/year"},
     ])
-    st.dataframe(demand_df, hide_index=True, use_container_width=True)
-    a, b, c = st.columns(3)
-    a.metric("2050 domestic final demand", "908.72 TWh/year")
-    b.metric("Export pathways assessed", "3")
-    c.metric("Energy-system model", "EnergyPLAN 16.3")
-    st.info("Domestic final energy demand is not the same as total energy generation. Electricity, hydrogen or e-methane produced for export is additional to the domestic final-demand requirement. The thesis gives the 2019 and 2050 demand totals in Table 6 (p. 63); the same 2050 domestic demand assumption is used when comparing the four 2050 pathways.")
-    st.caption("The research questions provide the framework for the assessment sections below. The thesis is the primary reference for reported findings.")
+    st.dataframe(demand, hide_index=True, use_container_width=True)
+    st.metric("2050 domestic final energy demand", "908.72 TWh/year")
+    st.caption(
+        "The 2050 export scenarios retain the same projected domestic final energy demand. "
+        "Energy produced for export is additional to this requirement. Domestic final energy "
+        "demand should not be confused with total energy generation or export production. "
+        "Source: thesis Table 6, p. 63."
+    )
+
+    st.subheader("How to navigate the dashboard")
+    st.write(
+        "The following sections examine the research questions through the thesis's "
+        "technical, economic, social and environmental findings. The scenario comparison "
+        "brings the different pathways together, while the Interactive Scenario Explorer "
+        "allows users to investigate selected assumptions and sensitivities."
+    )
+    st.caption(
+        "Throughout the dashboard, thesis-reported findings are distinguished from "
+        "additional calculations, interpretations and interactive sensitivities."
+    )
+
+elif page == "Four assessment dimensions":
+    st.header("Four dimensions of the energy transition")
+    st.write("The thesis evaluates the transition through four complementary dimensions.")
+    st.markdown("""
+    **Technical feasibility** — energy-system configuration, renewable generation, storage, energy balances and export infrastructure.
+
+    **Economic viability** — investment requirements, system costs, export revenues, profitability and LCOX.
+
+    **Social implications** — employment creation, improved access to safe water, water security, regional equity and socioeconomic development.
+
+    **Environmental implications** — land requirements, water consumption associated with energy production, and emissions.
+    """)
+    st.caption("Detailed indicators and numerical results will be integrated from the corresponding thesis chapters and appendices.")
 
 elif page == "Renewable energy siting":
     st.header("Renewable energy siting assessment")
@@ -139,36 +152,39 @@ elif page == "Renewable energy siting":
 
     st.subheader("Step 1 — Candidate development zones")
     st.write("The thesis manually delineates four large candidate zones after excluding mountainous and steep-slope areas, high-density urban zones, northern Algeria, small or isolated areas and protected regions.")
-    st.markdown("**Interactive administrative reference map — satellite imagery**")
-    st.write("Explore the historical 58-wilaya administrative layer over satellite imagery. The wilaya associations are indicative geographical references only; they are not the exact boundaries of the four manually delineated candidate zones.")
-    render_site_admin_map()
-
     map_path = Path(__file__).parent / "assets" / "thesis_site_selection_map.png"
     if map_path.exists():
-        with st.expander("View the original thesis map (Figure 2.1)"):
-            st.image(str(map_path), caption="Original Figure 2.1 from the 2025 thesis, retained for reference.", use_container_width=True)
+        st.image(str(map_path), caption="Figure 2.1 from the thesis: Renewable energy development zones in Algeria (2050). The original thesis map is shown without redrawing or inventing site boundaries.", use_container_width=True)
 
-    st.warning("The four candidate zones were manually delineated in the thesis. Their exact GIS polygons or coordinates were not provided. The interactive map displays the administrative reference layer and should not be interpreted as a newly verified GIS boundary dataset. Pipeline lines and labels should also be read according to the thesis limitations discussed in the infrastructure assessment.")
-
+    st.caption("The thesis map is retained as the geographic reference. The site polygons are manually delineated in the thesis; precise GIS boundary files or coordinates were not supplied, so this update does not create artificial map coordinates.")
     site_choice = st.selectbox("Explore a candidate site", sites["site"].tolist(), key="siting_site_detail")
     selected_site = sites.loc[sites["site"] == site_choice].iloc[0]
-    a, b = st.columns(2)
-    a.metric("Candidate zone", selected_site["site"])
-    b.metric("Region", selected_site["region"])
-    st.write("**Provinces listed in Appendix 2:** " + ", ".join(selected_site["provinces"]))
-    st.caption("The detailed province lists reproduce Appendix 2. The association is indicative and is not a verified GIS definition of the candidate-zone boundaries.")
+    a, b, c = st.columns(3)
+    a.metric("Thesis-reported total score", int(selected_site["score"]))
+    b.metric("Thesis-reported rank", int(selected_site["rank"]))
+    c.metric("Region", selected_site["region"])
+    st.write("**Provinces included:** " + ", ".join(selected_site["provinces"]))
+    st.caption("The detailed province lists reproduce Appendix 2. The main-text description of Site 02 is shorter; the appendix list is shown here.")
 
-    st.subheader("Step 2 — Multi-criteria suitability assessment")
-    st.write("The 14 criterion scores and weights below reproduce the normalized-score matrix and weights in the original MCDA Excel calculation supplied for this dashboard. Scores use the thesis Min–Max scale from 50 (least favourable) to 100 (most favourable).")
-
-    score_matrix = pd.DataFrame({"Criterion": criteria["criterion"], "Thesis weight": criteria["weight"], "Scoring preference": criteria["direction"]})
+    st.subheader("Step 2 — Original MCDA assessment")
+    st.write("Fourteen indicators are assessed using Min–Max normalisation on a scale from 50 (least favourable) to 100 (most favourable). Reverse scoring is applied where lower values are preferred.")
+    score_matrix = pd.DataFrame({"Criterion":criteria["criterion"],"Original weight":criteria["weight"],"Scoring preference":criteria["direction"]})
     for i, site in sites.iterrows():
         score_matrix[site["site"]] = criteria["scores"].apply(lambda values: values[i])
-    with st.expander("View the criterion scores and weights from Appendix 2, Table 2.2"):
-        st.dataframe(score_matrix, hide_index=True, use_container_width=True)
+    st.markdown("**Original criterion scores — Appendix 2, Table 2.2**")
+    st.dataframe(score_matrix, hide_index=True, use_container_width=True)
 
-    st.subheader("Adjust the criteria weights")
-    st.write("Change the relative importance of the 14 criteria. The tool recalculates the weighted sum and ranking for all four candidate sites. The weights are applied exactly as entered; they are not automatically rescaled or converted into percentages.")
+    st.subheader("Original thesis ranking")
+    ranked = sites.sort_values("rank")
+    fig = px.bar(ranked, x="site", y="score", text="score", title="Thesis-reported MCDA total scores",
+                 labels={"site":"Candidate site","score":"Reported total score"})
+    fig.update_traces(textposition="outside")
+    fig.update_yaxes(range=[0,180])
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.subheader("Interactive weighting experiment")
+    st.write("Change the importance assigned to each criterion and see how the relative site ranking responds. The underlying thesis criterion scores remain fixed.")
+    st.info("This is an exploratory weighted-score calculation, not a rerun of the thesis MCDA or EnergyPLAN. The published thesis totals and ranking above remain unchanged. Because the weights printed in Appendix 2 sum to 2.00 and the published totals cannot be reconstructed exactly from the displayed table, this explorer reports a separate weighted-average index on the original 50–100 score scale.")
 
     if st.button("Reset weights to thesis values", key="reset_siting_weights"):
         for i, item in criteria.iterrows():
@@ -176,89 +192,75 @@ elif page == "Renewable energy siting":
         st.rerun()
 
     weight_cols = st.columns(2)
-    entered_weights = []
+    interactive_weights = []
     for i, item in criteria.iterrows():
         with weight_cols[i % 2]:
             value = st.slider(
                 item["criterion"], min_value=0.0, max_value=0.5,
                 value=float(item["weight"]), step=0.01,
-                key=f"siting_weight_{i}", help=f"Thesis weight: {item['weight']:.2f}. {item['direction']}"
+                key=f"siting_weight_{i}", help=f"Original thesis weight: {item['weight']:.2f}. {item['direction']}"
             )
-        entered_weights.append(value)
+        interactive_weights.append(value)
 
-    entered_total = sum(entered_weights)
-    thesis_weight_total = float(criteria["weight"].sum())
-    if entered_total <= 0:
+    weight_total = sum(interactive_weights)
+    if weight_total <= 0:
         st.warning("Increase at least one criterion weight to calculate a ranking.")
     else:
-        applied_weights = entered_weights
         score_values = [[float(v) for v in row] for row in criteria["scores"]]
-        weighted_scores = []
+        interactive_scores = []
         for site_index in range(len(sites)):
-            weighted_score = sum(applied_weights[i] * score_values[i][site_index] for i in range(len(criteria)))
-            weighted_scores.append(weighted_score)
-
-        result = sites[["site", "region"]].copy()
-        result["Weighted score"] = weighted_scores
-        result = result.sort_values(["Weighted score", "site"], ascending=[False, True]).reset_index(drop=True)
-        result["Rank"] = range(1, len(result) + 1)
-        st.dataframe(result[["Rank", "site", "region", "Weighted score"]].round({"Weighted score": 2}), hide_index=True, use_container_width=True)
-        if abs(entered_total - thesis_weight_total) < 1e-9:
-            st.caption("With the original Excel weights, the calculated totals are 156.08 (Site 01), 161.34 (Site 02), 158.22 (Site 03) and 119.67 (Site 04). These reproduce the Excel weighted-sum results and ranks 3, 1, 2 and 4.")
-        else:
-            st.caption(f"Current weight total: {entered_total:.2f}. The total changes when you adjust weights; this is intentional because the tool applies the entered coefficients directly.")
-
-        chart = px.bar(
-            result.sort_values("Rank"), x="site", y="Weighted score", text="Rank",
-            title="Candidate-site ranking under the selected criteria weights",
-            labels={"site": "Candidate site", "Weighted score": "Weighted score", "Rank": "Rank"}
-        )
+            weighted_score = sum(interactive_weights[i] * score_values[i][site_index] for i in range(len(criteria))) / weight_total
+            interactive_scores.append(weighted_score)
+        result = sites[["site", "region", "score", "rank"]].copy()
+        result["Interactive weighted index"] = interactive_scores
+        result = result.sort_values("Interactive weighted index", ascending=False).reset_index(drop=True)
+        result["Interactive rank"] = range(1, len(result) + 1)
+        result = result.rename(columns={"score":"Thesis total score", "rank":"Thesis rank"})
+        st.caption(f"Current adjustable weight total: {weight_total:.2f}. Weights are normalised proportionally inside the weighted-average calculation; the original thesis weights remain unchanged in the source data.")
+        st.dataframe(result[["site", "region", "Thesis total score", "Thesis rank", "Interactive weighted index", "Interactive rank"]].round({"Interactive weighted index":2}), hide_index=True, use_container_width=True)
+        chart = px.bar(result, x="site", y="Interactive weighted index", color="Interactive rank", text="Interactive rank", title="Site ranking under your selected criteria weights", labels={"site":"Candidate site", "Interactive weighted index":"Weighted index (50–100)", "Interactive rank":"New rank"})
         chart.update_traces(textposition="outside")
-        chart.update_yaxes(range=[0, 210])
+        chart.update_yaxes(range=[45,105])
         st.plotly_chart(chart, use_container_width=True)
-
         winner = result.iloc[0]
-        st.success(f"Under the current weighting choices, {winner['site']} ranks first with a weighted score of {winner['Weighted score']:.2f}.")
-
-        with st.expander("View the weights applied in this calculation"):
-            weight_view = criteria[["criterion", "weight"]].copy()
-            weight_view["Selected slider value"] = entered_weights
-            weight_view["Applied weight"] = applied_weights
-            weight_view = weight_view.rename(columns={"weight": "Thesis weight"})
-            st.dataframe(weight_view.round({"Thesis weight": 3, "Selected slider value": 3, "Applied weight": 3}), hide_index=True, use_container_width=True)
-            st.caption(f"Applied weights total: {sum(applied_weights):.2f}. No automatic normalization is applied.")
+        st.success(f"Under the current weighting choices, {winner['site']} ranks first with an interactive index of {winner['Interactive weighted index']:.2f}.")
 
     st.subheader("Explore an individual criterion")
     selected = st.selectbox("Choose an indicator", criteria["criterion"].tolist(), key="siting_criterion_detail")
     item = criteria.loc[criteria["criterion"] == selected].iloc[0]
-    rows = [{"Candidate site": sites.iloc[i]["site"], "Reported raw value": item["raw"][i], "Normalised criterion score": item["scores"][i]} for i in range(len(sites))]
-    st.write(f"**Thesis weight:** {item['weight']:.2f}  |  **Scoring preference:** {item['direction']}")
+    rows = [{"Candidate site":sites.iloc[i]["site"],"Reported raw value":item["raw"][i],"Reported score":item["scores"][i]} for i in range(len(sites))]
+    st.write(f"**Original weight:** {item['weight']:.2f}  |  **Scoring preference:** {item['direction']}")
     st.dataframe(pd.DataFrame(rows), hide_index=True, use_container_width=True)
 
     st.subheader("Scoring equations")
     st.latex(r"Score(x)=50+\left(\frac{x-x_{min}}{x_{max}-x_{min}}\right)\times 50")
     st.latex(r"Score_{reverse}(x)=100-\left(\frac{x-x_{min}}{x_{max}-x_{min}}\right)\times 50")
-    st.latex(r"Weighted\ score=\sum_i (weight_i\times criterion\ score_i)")
 
     with st.expander("Methodological notes and limitations reported in Appendix 2"):
         st.markdown("""
         - Wind and solar data are attributed to DTU Wind Energy & World Bank Group (2025) and World Bank Group (2025).
         - Distances, except for roads, are estimated as straight-line (Euclidean) values and do not reflect topographical terrain.
         - Desalination, grid connection and HVDC export proximity were prioritised because of their role in hydrogen production and electricity exports.
-        - For Site 01 and Site 04, gas-infrastructure values of −200 and −500 represent approximate distances to the nearest connection point because no pipelines cross those zones. For Sites 02 and 03, the values represent existing gas-pipeline length within the site boundaries.
+        - For Site 01 and Site 04, gas-infrastructure values of −200 and −500 represent approximate distances to the nearest connection point because no pipelines cross those zones. For Sites 02 and 03, values represent existing gas-pipeline length within the site boundaries.
         - Road network coverage is based on the extent of major roads passing through the sites.
         - Electricity grid availability was qualitatively assessed from regional grid maps.
         - Unemployment and population density are based on 2019 provincial-level averages.
         - Environmental suitability is based on distance from protected or ecologically sensitive areas.
         """)
-        st.info("The weights in the supplied Excel calculation sum to 2.00. They are importance coefficients, not percentages, and are intentionally preserved without normalization. The electricity-grid-distance scores (50 or 100) and historical-rehabilitation scores (100 for Site 01; 50 for Sites 02–04) are assumption-based inputs in the original calculation. They are retained as supplied.")
+        st.warning("Appendix 2 Table 2.1 reports weights that sum to 2.00, not 1.00. The original weights and thesis-reported totals are preserved without normalisation. Some raw-value unit labels in the table appear misaligned or unclear, so ambiguous units are flagged rather than silently corrected.")
 
-    st.caption("This interactive MCDA is a sensitivity analysis of the thesis criteria and weights. It does not rerun EnergyPLAN. Exact clickable site polygons would require original GIS boundaries or site-coordinate data, which were not provided in the thesis.")
+    st.success("Site 02 is the highest-ranked candidate in the thesis, with a reported score of 161 and rank 1.")
+    st.caption("The map is the original thesis figure. The site selector and weighting experiment are interactive; exact clickable geographic polygons require the original GIS boundaries or site-coordinate data.")
+
+elif page == "Algeria's energy system":
+    st.header("Algeria's energy system")
+    st.metric("2050 final energy demand", "908.72 TWh/year")
+    st.info("Detailed generation mix, installed capacities, storage and energy-balance results will be populated from the final thesis tables. Final energy demand must not be confused with total electricity generation.")
+
 
 elif page == "Technical assessment":
     st.header("Technical assessment")
-    st.write("This section addresses the first research question: Algeria's potential to export renewable electricity, green hydrogen and e-methane to Europe, together with the energy-system configurations, storage and export infrastructure considered in the thesis.")
-    st.info("The figures below are thesis scenario results and technical assumptions. They describe modelled configurations; they do not by themselves demonstrate that the projects or export infrastructure have been built or are ready for implementation.")
+    st.write("This module presents the EnergyPLAN reference configurations and the technical infrastructure described in the thesis.")
     tech = load_data("technical_results.json")
     tech_df = pd.DataFrame(tech["scenarios"])
     selected = st.selectbox("Select a scenario", tech_df["name"].tolist())
@@ -268,7 +270,6 @@ elif page == "Technical assessment":
     b.metric("Solar PV capacity", f"{row['pv_MW']:,.0f} MW")
     c.metric("Electrolyser capacity", f"{row['electrolyser_MW']:,.0f} MW")
     st.subheader("Scenario configuration")
-    st.caption("Installed capacities are power ratings (MW); annual wind and solar generation are energy quantities (TWh/year). Storage capacities are shown separately in GWh. These units describe different aspects of the system and should not be compared as if they were interchangeable.")
     st.dataframe(tech_df.rename(columns={
         "name":"Scenario","wind_MW":"Wind capacity (MW)","pv_MW":"PV capacity (MW)",
         "wind_TWh":"Wind generation (TWh)","pv_TWh":"PV generation (TWh)",
@@ -285,18 +286,22 @@ elif page == "Technical assessment":
     gen["Technology"] = gen["Technology"].map({"wind_TWh":"Onshore wind","pv_TWh":"Solar PV"})
     st.plotly_chart(px.bar(gen,x="name",y="Generation (TWh/year)",color="Technology",barmode="group",title="Wind and PV generation"),use_container_width=True)
     st.subheader("Storage requirements")
-    st.dataframe(tech_df[["name","battery_GWh","hydrogen_GWh","gas_GWh"]].rename(columns={"name":"Scenario","battery_GWh":"Battery storage (GWh)","hydrogen_GWh":"Hydrogen storage (GWh)","gas_GWh":"Gas storage (GWh)"}),hide_index=True,use_container_width=True)
-    st.caption("Storage capacities represent stored-energy capacity, not annual generation. Electricity discharged from storage is not new primary generation and should not be counted again as additional energy production.")
+    st.dataframe(tech_df[["name","battery_GWh","hydrogen_GWh","gas_GWh"]].rename(columns={"name":"Scenario","battery_GWh":"Battery (GWh)","hydrogen_GWh":"Hydrogen (GWh)","gas_GWh":"Gas (GWh)"}),hide_index=True,use_container_width=True)
+    st.subheader("Electricity consumption indicators")
+    st.dataframe(pd.DataFrame(tech["electricity_use"]),hide_index=True,use_container_width=True)
     st.metric("Critical excess electricity production — electricity export",f"{tech['notes']['electricity_export_CEEP_TWh']} TWh/year")
     st.write(f"The electricity export case models {tech['notes']['electricity_export_input_TWh']} TWh/year entering the export chain. The thesis assumes {tech['notes']['electricity_export_losses_TWh']} TWh of losses, leaving {tech['notes']['electricity_export_net_TWh']} TWh/year delivered. Flexible demand is estimated at {tech['notes']['flexible_demand_TWh']} TWh/year.")
     with st.expander("Electricity HVDC routes — thesis Tables 15–16"):
         st.dataframe(pd.DataFrame(tech["hvdc"]),hide_index=True,use_container_width=True)
     with st.expander("Hydrogen pipeline routes — thesis Table 18"):
         st.dataframe(pd.DataFrame(tech["hydrogen_routes"]),hide_index=True,use_container_width=True)
+    with st.expander("Important thesis data notes"):
+        st.warning("The thesis reports base-scenario total electricity generation as 2,134.33 TWh in Table 9 but 2,177.83 TWh in the later narrative. For electricity exports, Table 10 reports 3,075.33 TWh while the later narrative reports 3,179.58 TWh. These differences are flagged rather than reconciled.")
+        st.warning("Battery and gas storage values are transcribed from the thesis storage discussion and scenario tables. Where table and narrative figures differ, they should be interpreted with their source context; older workbooks are not used to overwrite thesis results.")
     st.caption("Sources: thesis Tables 9–18 and Section 4.2, approximately pp. 78–95.")
 
-elif page == "Scenario comparison":
-    st.header("Scenario comparison: domestic transition and energy exports")
+elif page == "Five-scenario comparison":
+    st.header("Five-scenario comparison")
     st.write("Compare the 2019 baseline and four 2050 pathways across the thesis’s technical, economic, social and environmental assessment dimensions.")
     st.info("The comparison preserves the thesis’s source coverage. Where the thesis dataset supplied for this dashboard does not provide a comparable indicator for a scenario, the table shows ‘Not reported’ rather than estimating or filling the gap.")
 
@@ -348,7 +353,6 @@ elif page == "Scenario comparison":
         if is_2019:
             rows.append({
                 "Scenario": label,
-                "Domestic final energy demand (TWh/y)": 465.95,
                 "Technical — wind + PV generation (TWh/y)": supplementary_2019["wind_pv_generation_TWh_year"],
                 "Technical — battery storage (GWh)": supplementary_2019["battery_storage_GWh"],
                 "Economic — export product": "Not reported for 2019 baseline",
@@ -366,7 +370,6 @@ elif page == "Scenario comparison":
         product = "No exports" if not econ_key else {"Electricity":"Electricity", "Green hydrogen":"Green hydrogen", "E-methane":"E-methane"}[econ_key]
         rows.append({
             "Scenario": label,
-            "Domestic final energy demand (TWh/y)": 908.72,
             "Technical — wind + PV generation (TWh/y)": round(t.get("wind_TWh", 0) + t.get("pv_TWh", 0), 2) if t else "Not reported",
             "Technical — battery storage (GWh)": t.get("battery_GWh", "Not reported"),
             "Economic — export product": product,
@@ -382,16 +385,7 @@ elif page == "Scenario comparison":
     comparison = pd.DataFrame(rows)
 
     st.subheader("At-a-glance comparison across the four dimensions")
-    st.write("Use the tabs to compare each assessment dimension separately. This keeps the scenario comparison readable without combining unrelated units in one very wide table.")
-    tab_tech, tab_econ, tab_social, tab_environment = st.tabs(["Technical", "Economic", "Social", "Environmental"])
-    with tab_tech:
-        st.dataframe(comparison[["Scenario", "Domestic final energy demand (TWh/y)", "Technical — wind + PV generation (TWh/y)", "Technical — battery storage (GWh)", "Data provenance"]], hide_index=True, use_container_width=True)
-    with tab_econ:
-        st.dataframe(comparison[["Scenario", "Economic — export product", "Economic — export volume (TWh/y)", "Economic — revenue (€bn/y)", "Economic — reported net profit (€bn/y)"]], hide_index=True, use_container_width=True)
-    with tab_social:
-        st.dataframe(comparison[["Scenario", "Social — permanent jobs", "Social — temporary job-years"]], hide_index=True, use_container_width=True)
-    with tab_environment:
-        st.dataframe(comparison[["Scenario", "Environmental — total water demand (Gm³/y)", "Environmental — PV land (km²)"]], hide_index=True, use_container_width=True)
+    st.dataframe(comparison, hide_index=True, use_container_width=True)
     st.caption("The thesis is the primary reference for the comparison. Selected 2019 technical, water-demand and land figures are supplementary information from the user's comparison table; they are not presented as thesis-reported results. 2024 trade statistics are excluded from this scenario table because they fall outside its 2019 baseline and 2050 thesis-scenario scope.")
     with st.expander("How to read the data and supplementary 2019 figures"):
         st.markdown("""
@@ -422,15 +416,6 @@ elif page == "Scenario comparison":
         "LCOX_EUR_MWh":"LCOX (€/MWh)"})
     st.dataframe(econ_view, hide_index=True, use_container_width=True)
     st.plotly_chart(px.bar(exports, x="scenario", y="reported_net_profit_EUR_bn", title="Reported net profit by export pathway", labels={"scenario":"Export pathway", "reported_net_profit_EUR_bn":"€bn/year"}), use_container_width=True)
-    st.markdown("**Cost calculation detail**")
-    cost_view = exports[["scenario", "annual_export_cost_for_profit_EUR_bn", "incremental_system_cost_for_LCOX_EUR_bn", "LCOX_EUR_MWh"]].rename(columns={
-        "scenario":"Export pathway",
-        "annual_export_cost_for_profit_EUR_bn":"Cost used for reported profit (€bn/year)",
-        "incremental_system_cost_for_LCOX_EUR_bn":"Incremental system cost for LCOX (€bn/year)",
-        "LCOX_EUR_MWh":"LCOX (€/MWh)"
-    })
-    st.dataframe(cost_view, hide_index=True, use_container_width=True)
-    st.caption("The export cost used for reported net profit and the incremental system cost used for LCOX are separate calculations and should not be treated as interchangeable.")
 
     st.subheader("Social dimension")
     st.write("Employment figures cover the four 2050 scenarios. Permanent jobs are ongoing positions; temporary employment is expressed in job-years. These units are not added together.")
@@ -470,24 +455,46 @@ elif page == "Scenario comparison":
         - This page compares published reference values; it does not run EnergyPLAN or establish new system-feasibility results.
         """)
 
+elif page == "Export scenario comparison":
+    st.header("Export scenario comparison")
+    view = exports[["scenario","export_volume_TWh_year","market_price_EUR_MWh","annual_revenue_EUR_bn","reported_net_profit_EUR_bn","LCOX_EUR_MWh"]].copy()
+    view.columns = ["Export pathway","Delivered exports (TWh/year)","Market price (€/MWh)","Revenue (€bn/year)","Reported net profit (€bn/year)","LCOX (€/MWh)"]
+    st.dataframe(view, hide_index=True, use_container_width=True)
+    x,y = st.columns(2)
+    with x:
+        st.plotly_chart(px.bar(exports,x="scenario",y="annual_revenue_EUR_bn",title="Annual export revenue",labels={"scenario":"Pathway","annual_revenue_EUR_bn":"€bn/year"}),use_container_width=True)
+    with y:
+        st.plotly_chart(px.bar(exports,x="scenario",y="LCOX_EUR_MWh",title="Levelised cost of export (LCOX)",labels={"scenario":"Pathway","LCOX_EUR_MWh":"€/MWh"}),use_container_width=True)
+
+elif page == "Economic assessment":
+    st.header("Economic assessment")
+    st.write("Published thesis reference values.")
+    st.dataframe(exports[["scenario","annual_revenue_EUR_bn","annual_export_cost_for_profit_EUR_bn","reported_net_profit_EUR_bn","incremental_system_cost_for_LCOX_EUR_bn","LCOX_EUR_MWh"]].rename(columns={
+        "scenario":"Export pathway","annual_revenue_EUR_bn":"Revenue (€bn/year)",
+        "annual_export_cost_for_profit_EUR_bn":"Cost used for reported profit (€bn/year)",
+        "reported_net_profit_EUR_bn":"Reported net profit (€bn/year)",
+        "incremental_system_cost_for_LCOX_EUR_bn":"Incremental system cost for LCOX (€bn/year)",
+        "LCOX_EUR_MWh":"LCOX (€/MWh)"
+    }),hide_index=True,use_container_width=True)
+    with st.expander("Why are there two cost figures?"):
+        st.write("The thesis distinguishes the export cost used in the net-profit calculation from the incremental system cost used for LCOX. These are separate calculations and must not be treated as interchangeable.")
+        st.write("Incremental export system cost = total export-scenario system cost − total domestic base-scenario system cost.")
+        st.write("LCOX = incremental annual system cost ÷ net annual export energy delivered.")
+        st.caption("The final thesis is the authoritative source for published results. Supporting workbooks help explain calculations and discrepancies; they do not silently overwrite thesis values.")
+
 elif page == "Social assessment":
     st.header("Social assessment")
-    st.write("This section addresses Research Question 3 by examining the potential employment, water-access and regional-development implications of the renewable-energy transition and export pathways.")
     se = load_data("social_environment.json")
     emp = pd.DataFrame(se["employment"])
     st.write("The thesis estimates employment across the domestic base and three export pathways. Permanent jobs and temporary job-years are shown separately because they represent different types and durations of employment.")
-    st.info("Employment methodology: permanent jobs represent ongoing positions, while temporary employment is expressed in job-years. The two measures are calculated differently and should be interpreted separately, not added together.")
     a,b = st.columns(2)
     a.metric("Highest permanent employment", f"{emp['permanent_jobs'].max():,.0f} jobs", "Electricity export")
     b.metric("Highest temporary employment", f"{emp['temporary_job_years'].max():,.0f} job-years", "Electricity export")
     st.subheader("Employment estimates by scenario")
     st.dataframe(emp.rename(columns={"scenario":"Scenario","permanent_jobs":"Permanent jobs (annual)","temporary_job_years":"Temporary employment (job-years)"}),hide_index=True,use_container_width=True)
-    left, right = st.columns(2)
-    with left:
-        st.plotly_chart(px.bar(emp, x="scenario", y="permanent_jobs", title="Estimated permanent jobs", labels={"scenario":"2050 scenario", "permanent_jobs":"Jobs (positions)"}), use_container_width=True)
-    with right:
-        st.plotly_chart(px.bar(emp, x="scenario", y="temporary_job_years", title="Estimated temporary employment", labels={"scenario":"2050 scenario", "temporary_job_years":"Job-years"}), use_container_width=True)
-    st.caption("The two employment categories are charted separately because permanent positions and temporary job-years are different measures and should not be compared on a shared scale or added together.")
+    chart = emp.melt(id_vars="scenario",value_vars=["permanent_jobs","temporary_job_years"],var_name="Employment type",value_name="Estimated total")
+    chart["Employment type"] = chart["Employment type"].map({"permanent_jobs":"Permanent jobs","temporary_job_years":"Temporary job-years"})
+    st.plotly_chart(px.bar(chart,x="scenario",y="Estimated total",color="Employment type",barmode="group",title="Employment estimates (different units; compare within each category)"),use_container_width=True)
     with st.expander("How the thesis estimates employment"):
         method = se["employment_method"]
         st.write("**Permanent:** " + method["permanent_jobs"])
@@ -525,31 +532,28 @@ elif page == "Social assessment":
 
 elif page == "Environmental assessment":
     st.header("Environmental assessment")
-    st.write("This section addresses the environmental part of Research Question 3 by examining energy-related water demand, estimated solar PV land requirements and the CO₂ results reported for the modelled scenarios.")
     se = load_data("social_environment.json")
     st.caption("This section covers environmental pressures from the energy system. Household access to clean water and regional water security are presented under Social Assessment.")
     st.subheader("Water demand across scenarios")
     water = pd.DataFrame(se["water_demand"])
     st.dataframe(water.rename(columns={"scenario":"Scenario","non_energy_use_Gm3_year":"Non-energy use (Gm³/year)","hydrogen_production_water_Gm3_year":"Hydrogen production (Gm³/year)","pv_wind_operations_water_Gm3_year":"PV/wind operations (Gm³/year)","total_water_demand_Gm3_year":"Total demand (Gm³/year)"}),hide_index=True,use_container_width=True)
-    st.caption("Values transcribed from thesis Table 13. The thesis table also includes TWh energy-use rows; those are energy quantities, not water volumes, and are not included here. The water figures should be interpreted within the categories and scope reported by the thesis.")
+    st.caption("Values transcribed from thesis Table 13. The thesis table also includes TWh energy-use rows; those are not water volumes and are not included in this table.")
     st.subheader("Estimated solar PV land requirement")
     land = pd.DataFrame(se["solar_land_use"])
     st.dataframe(land.rename(columns={"scenario":"Scenario","pv_generation_GWh_year":"PV generation (GWh/year)","land_km2":"Estimated PV land (km²)","share_site_02_percent":"Share of Site 02 (%)","share_national_area_percent":"Share of national area (%)"}),hide_index=True,use_container_width=True)
     st.plotly_chart(px.bar(land,x="scenario",y="land_km2",title="Estimated land required for solar PV (km²)"),use_container_width=True)
-    st.caption("The thesis estimates PV land using 211.64 GWh/km²/year, based on 20% panel efficiency, 0.84 system efficiency, 0.24 capacity factor and 0.6 ground coverage ratio. This is an assumption-based estimate for solar PV land only; it is not a complete footprint for wind farms, transmission, water systems or export infrastructure.")
+    st.caption("The thesis estimates PV land using 211.64 GWh/km²/year, based on 20% panel efficiency, 0.84 system efficiency, 0.24 capacity factor and 0.6 ground coverage ratio. This is a PV land estimate, not a complete footprint for all infrastructure.")
     st.subheader("CO₂ emissions reported in the thesis")
     em = se["emissions"]
     a,b,c = st.columns(3)
     a.metric("Domestic 2019", f"{em['domestic_2019']:.2f} Mt")
     b.metric("Domestic 2050", f"{em['domestic_2050_all_scenarios']:.0f} Mt", "All modelled scenarios")
     c.metric("E-methane export balance", f"{em['including_exports_2050']['E-methane Export']:.2f} Mt")
-    st.write("For the 2050 export scenarios, the thesis reports zero CO₂ for electricity exports and green hydrogen exports, and −116.18 Mt for e-methane exports. The thesis also reports 284.67 Mt for the 2019 case when exports are included. These are thesis accounting results for the stated scenarios.")
+    st.write("Including exports, the thesis reports 284.67 Mt in 2019, zero for electricity and hydrogen exports in 2050, and −116.18 Mt for e-methane exports.")
     st.warning(em["non_co2_note"])
-    st.info("Interpretation: the negative e-methane CO₂ balance reflects the thesis's accounting treatment, including the allocation of captured CO₂ to importing countries. It should not be read as proof of full lifecycle net-negative emissions. Methane leakage and non-CO₂ greenhouse gases remain relevant.")
-    with st.expander("Environmental assumptions and limitations"):
+    with st.expander("Interpretation and limitations"):
         for item in se["limitations"]:
             st.write("• " + item)
-        st.write("The land estimates cover solar PV area only. They do not quantify the complete land footprint or all local ecological and social impacts of the proposed energy infrastructure.")
 
 elif page == "Interactive scenario explorer":
     st.header("Interactive scenario explorer — financial sensitivity")
@@ -567,7 +571,7 @@ elif page == "Interactive scenario explorer":
     c.metric("Indicative net profit",f"€{profit:,.3f}bn/year")
     st.warning("Financial sensitivity only. This does not rerun EnergyPLAN or recalculate hourly generation, demand, storage, curtailment, transmission losses or physical system feasibility. Changing export volume does not demonstrate that the energy system can deliver it.")
 
-elif page == "Methodology and sources":
+else:
     st.header("Methodology and sources")
     st.markdown("""
     **Modelling approach:** EnergyPLAN 16.3 hourly energy-system modelling; LUT-DEMAND for 2050 demand; PV profiles from PVGIS; technical, economic, social and environmental assessment.
@@ -580,53 +584,6 @@ elif page == "Methodology and sources":
     Discrepancies are documented. Supporting workbooks do not silently overwrite thesis reference values.
     """)
     st.write("For the siting assessment, the principal reference is Appendix 2, including Tables 2.1 and 2.2 and Figure 2.1.")
-
-elif page == "Thesis limitations and critical considerations":
-    st.header("Thesis limitations and critical considerations")
-    st.write("This section brings together qualifications that affect how the thesis results should be interpreted. It separates information documented in the thesis from additional observations identified during our review.")
-
-    st.subheader("1. Technical modelling")
-    st.markdown("**Interpretation of the thesis results**")
-    st.write("The EnergyPLAN 16.3 scenarios are modelled energy-system configurations for 2050. Their results describe the performance of the modelled scenarios under the stated inputs and assumptions; they should not be read as proof that the systems have already been implemented or that every technical, regulatory and operational condition for implementation has been resolved.")
-    st.markdown("**Additional critical consideration from our review**")
-    st.write("The dashboard's interactive scenario explorer changes financial assumptions only. It does not rerun EnergyPLAN or recalculate hourly generation, storage, curtailment, transmission losses or physical system feasibility.")
-    st.markdown("**Data discrepancies in the thesis**")
-    st.write("The thesis reports domestic-base electricity generation as 2,134.33 TWh in Table 9 and 2,177.83 TWh in later narrative text. For the electricity-export scenario, Table 10 reports 3,075.33 TWh, while later narrative text reports 3,179.58 TWh. These figures are retained as reported and are not reconciled here.")
-
-    st.subheader("2. Export infrastructure")
-    st.markdown("**E-methane pipeline-capacity limitation — thesis figures**")
-    st.write("The thesis reports a combined nominal capacity of 45.5 bcm/year for the operational TransMed and Medgaz pipelines (Table 4, p. 24). Using the thesis conversion of 10 TWh per bcm (Table 17, p. 83), this corresponds to 455 TWh/year. However, the 2050 e-methane scenario assumes exports of 574 TWh/year (Section 4.1.4), exceeding this capacity by 119 TWh/year, or approximately 11.9 bcm/year.")
-    st.warning("The thesis does not include the additional pipeline capacity or investment costs that may be required to transport this difference. Consequently, its reported e-methane export costs and profitability do not account for the potential need to expand or construct pipeline infrastructure. This comparison is a capacity screening, not a pipeline engineering study.")
-    st.caption("References: thesis Table 4 (p. 24), Table 17 (p. 83) and Section 4.1.4. The 119 TWh/year difference is calculated from the thesis figures; it is not a separately modelled thesis result.")
-
-    st.subheader("3. Economic assessment")
-    st.markdown("**Assumptions and interpretation**")
-    st.write("Revenues and profitability depend on the thesis's assumed market prices, export volumes, costs and infrastructure arrangements. They are scenario results, not guaranteed commercial outcomes. Reported net profit and LCOX use different cost calculations.")
-
-    st.subheader("4. Renewable-energy site selection")
-    st.markdown("**Limitations documented in the thesis material**")
-    st.write("The four candidate renewable-energy zones were manually delineated. Precise GIS polygons or coordinates for the zones are not provided in the thesis material used for this dashboard, so their exact boundaries cannot be independently reproduced from those sources.")
-    st.markdown("**MCDA weighting note**")
-    st.write("The original criterion weights sum to 2.00 rather than 1.00. They are retained as importance coefficients, without normalisation.")
-
-    st.subheader("5. Environmental assessment")
-    st.markdown("**Interpretation of the thesis results**")
-    st.write("The land-use figures estimate solar PV land requirements under the thesis's stated assumptions; they do not represent the complete land footprint of all energy, transmission, water and export infrastructure. Water-demand estimates also depend on the scope and assumptions used in the thesis tables.")
-    st.markdown("**Additional critical consideration from our review**")
-    st.write("The negative e-methane CO₂ balance reported by the thesis (−116.18 Mt) reflects its accounting treatment, including allocation of captured CO₂ to importing countries. It should not be interpreted on its own as proof that the full e-methane value chain is lifecycle net-negative. Methane leakage and non-CO₂ greenhouse-gas emissions also remain relevant to the overall environmental assessment.")
-
-elif page == "Future development":
-    st.header("Future development")
-    st.write("This section identifies possible directions for extending the research beyond the scope of the original thesis. These are proposals for further work, not findings or recommendations tested by the thesis.")
-    st.markdown("""
-    - **Renewable-energy siting:** develop precise GIS boundaries and conduct a more detailed spatial assessment of the four candidate zones.
-    - **Export infrastructure:** examine pipeline and HVDC capacity, technical requirements, operating conditions and investment needs in greater detail.
-    - **Economic assessment:** test alternative European market prices, financing arrangements and infrastructure-cost assumptions.
-    - **Water resources:** assess water availability, desalination requirements and distribution infrastructure at regional scale.
-    - **Implementation feasibility:** investigate regulatory, institutional, operational and investment conditions for each export pathway.
-    - **Social and environmental impacts:** develop more detailed assessments of local employment, community impacts, land use, water resources and lifecycle emissions.
-    """)
-
 
 st.divider()
 st.caption("Reference: Imadeddine Menakh (2025), *Powering EU? – Energy scenarios for exporting electricity, green hydrogen and e-methane from Algeria to Europe*.")
