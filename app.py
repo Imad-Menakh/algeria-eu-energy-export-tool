@@ -61,6 +61,7 @@ st.info("The final thesis is the primary reference for published results. Intera
 
 pages = [
     "Research overview",
+    "Research questions",
     "Scenario comparison",
     "Renewable energy siting",
     "Technical assessment",
@@ -78,6 +79,13 @@ if page == "Research overview":
     st.write("The thesis investigates how Algeria could transition towards a 100% renewable energy system by 2050 while potentially supplying energy to Europe through three export pathways: electricity, green hydrogen and e-methane.")
     st.subheader("Research objective")
     st.write("The research compares a domestic renewable-energy pathway with three export-oriented pathways. It assesses their energy-system configurations and considers their technical, economic, social and environmental implications.")
+    st.subheader("Four dimensions considered in the research")
+    st.markdown("""
+    - **Technical:** energy-system configuration, renewable generation, storage, energy balances and export infrastructure.
+    - **Economic:** investment and system costs, export revenues, profitability and levelised cost of export (LCOX).
+    - **Social:** employment, water access, regional equity and socioeconomic development.
+    - **Environmental:** land requirements, energy-related water demand and emissions.
+    """)
     st.subheader("The five scenarios and their purpose")
     scenario_overview = pd.DataFrame([
         {"Scenario": "Algeria 2019 baseline", "Purpose": "Historical reference for Algeria's energy system"},
@@ -110,8 +118,11 @@ if page == "Research overview":
     b.metric("Export pathways assessed", "3")
     c.metric("Energy-system model", "EnergyPLAN 16.3")
     st.info("Domestic final energy demand is not the same as total energy generation. Electricity, hydrogen or e-methane produced for export is additional to the domestic final-demand requirement. The thesis gives the 2019 and 2050 demand totals in Table 6 (p. 63); the same 2050 domestic demand assumption is used when comparing the four 2050 pathways.")
-    st.subheader("Research questions")
-    st.write("To address its objectives, the thesis investigates three main questions:")
+    st.caption("The research questions provide the framework for the assessment sections below. The thesis is the primary reference for reported findings.")
+
+elif page == "Research questions":
+    st.header("Research questions")
+    st.write("To achieve its objectives, the thesis investigates three main research questions:")
     st.markdown("""
     **1. Technical potential and infrastructure**  
     What is Algeria's potential to export renewable electricity, green hydrogen and e-methane to Europe, and what technical and infrastructure requirements would these pathways involve?
@@ -122,14 +133,7 @@ if page == "Research overview":
     **3. Social and environmental implications**  
     What potential social and environmental benefits could renewable energy exports bring to Algerian communities and society more broadly?
     """)
-    st.subheader("Four dimensions considered")
-    st.markdown("""
-    - **Technical:** energy-system configuration, renewable generation, storage, energy balances and export infrastructure.
-    - **Economic:** investment and system costs, export revenues, profitability and levelised cost of export (LCOX).
-    - **Social:** employment, water access, regional equity and socioeconomic development.
-    - **Environmental:** land requirements, energy-related water demand and emissions.
-    """)
-    st.caption("The research questions provide the framework for the assessment sections below. The thesis is the primary reference for reported findings.")
+    st.info("These questions guide the Technical Assessment, Scenario Comparison, Social Assessment and Environmental Assessment. The dashboard presents the thesis findings and distinguishes them from additional calculations or interpretations.")
 
 elif page == "Renewable energy siting":
     st.header("Renewable energy siting assessment")
@@ -470,6 +474,7 @@ elif page == "Scenario comparison":
 
 elif page == "Social assessment":
     st.header("Social assessment")
+    st.write("This section addresses Research Question 3 by examining the potential employment, water-access and regional-development implications of the renewable-energy transition and export pathways.")
     se = load_data("social_environment.json")
     emp = pd.DataFrame(se["employment"])
     st.write("The thesis estimates employment across the domestic base and three export pathways. Permanent jobs and temporary job-years are shown separately because they represent different types and durations of employment.")
@@ -479,9 +484,12 @@ elif page == "Social assessment":
     b.metric("Highest temporary employment", f"{emp['temporary_job_years'].max():,.0f} job-years", "Electricity export")
     st.subheader("Employment estimates by scenario")
     st.dataframe(emp.rename(columns={"scenario":"Scenario","permanent_jobs":"Permanent jobs (annual)","temporary_job_years":"Temporary employment (job-years)"}),hide_index=True,use_container_width=True)
-    chart = emp.melt(id_vars="scenario",value_vars=["permanent_jobs","temporary_job_years"],var_name="Employment type",value_name="Estimated total")
-    chart["Employment type"] = chart["Employment type"].map({"permanent_jobs":"Permanent jobs","temporary_job_years":"Temporary job-years"})
-    st.plotly_chart(px.bar(chart,x="scenario",y="Estimated total",color="Employment type",barmode="group",title="Employment estimates (different units; compare within each category)"),use_container_width=True)
+    left, right = st.columns(2)
+    with left:
+        st.plotly_chart(px.bar(emp, x="scenario", y="permanent_jobs", title="Estimated permanent jobs", labels={"scenario":"2050 scenario", "permanent_jobs":"Jobs (positions)"}), use_container_width=True)
+    with right:
+        st.plotly_chart(px.bar(emp, x="scenario", y="temporary_job_years", title="Estimated temporary employment", labels={"scenario":"2050 scenario", "temporary_job_years":"Job-years"}), use_container_width=True)
+    st.caption("The two employment categories are charted separately because permanent positions and temporary job-years are different measures and should not be compared on a shared scale or added together.")
     with st.expander("How the thesis estimates employment"):
         method = se["employment_method"]
         st.write("**Permanent:** " + method["permanent_jobs"])
@@ -519,28 +527,31 @@ elif page == "Social assessment":
 
 elif page == "Environmental assessment":
     st.header("Environmental assessment")
+    st.write("This section addresses the environmental part of Research Question 3 by examining energy-related water demand, estimated solar PV land requirements and the CO₂ results reported for the modelled scenarios.")
     se = load_data("social_environment.json")
     st.caption("This section covers environmental pressures from the energy system. Household access to clean water and regional water security are presented under Social Assessment.")
     st.subheader("Water demand across scenarios")
     water = pd.DataFrame(se["water_demand"])
     st.dataframe(water.rename(columns={"scenario":"Scenario","non_energy_use_Gm3_year":"Non-energy use (Gm³/year)","hydrogen_production_water_Gm3_year":"Hydrogen production (Gm³/year)","pv_wind_operations_water_Gm3_year":"PV/wind operations (Gm³/year)","total_water_demand_Gm3_year":"Total demand (Gm³/year)"}),hide_index=True,use_container_width=True)
-    st.caption("Values transcribed from thesis Table 13. The thesis table also includes TWh energy-use rows; those are not water volumes and are not included in this table.")
+    st.caption("Values transcribed from thesis Table 13. The thesis table also includes TWh energy-use rows; those are energy quantities, not water volumes, and are not included here. The water figures should be interpreted within the categories and scope reported by the thesis.")
     st.subheader("Estimated solar PV land requirement")
     land = pd.DataFrame(se["solar_land_use"])
     st.dataframe(land.rename(columns={"scenario":"Scenario","pv_generation_GWh_year":"PV generation (GWh/year)","land_km2":"Estimated PV land (km²)","share_site_02_percent":"Share of Site 02 (%)","share_national_area_percent":"Share of national area (%)"}),hide_index=True,use_container_width=True)
     st.plotly_chart(px.bar(land,x="scenario",y="land_km2",title="Estimated land required for solar PV (km²)"),use_container_width=True)
-    st.caption("The thesis estimates PV land using 211.64 GWh/km²/year, based on 20% panel efficiency, 0.84 system efficiency, 0.24 capacity factor and 0.6 ground coverage ratio. This is a PV land estimate, not a complete footprint for all infrastructure.")
+    st.caption("The thesis estimates PV land using 211.64 GWh/km²/year, based on 20% panel efficiency, 0.84 system efficiency, 0.24 capacity factor and 0.6 ground coverage ratio. This is an assumption-based estimate for solar PV land only; it is not a complete footprint for wind farms, transmission, water systems or export infrastructure.")
     st.subheader("CO₂ emissions reported in the thesis")
     em = se["emissions"]
     a,b,c = st.columns(3)
     a.metric("Domestic 2019", f"{em['domestic_2019']:.2f} Mt")
     b.metric("Domestic 2050", f"{em['domestic_2050_all_scenarios']:.0f} Mt", "All modelled scenarios")
     c.metric("E-methane export balance", f"{em['including_exports_2050']['E-methane Export']:.2f} Mt")
-    st.write("Including exports, the thesis reports 284.67 Mt in 2019, zero for electricity and hydrogen exports in 2050, and −116.18 Mt for e-methane exports.")
+    st.write("For the 2050 export scenarios, the thesis reports zero CO₂ for electricity exports and green hydrogen exports, and −116.18 Mt for e-methane exports. The thesis also reports 284.67 Mt for the 2019 case when exports are included. These are thesis accounting results for the stated scenarios.")
     st.warning(em["non_co2_note"])
-    with st.expander("Interpretation and limitations"):
+    st.info("Interpretation: the negative e-methane CO₂ balance reflects the thesis's accounting treatment, including the allocation of captured CO₂ to importing countries. It should not be read as proof of full lifecycle net-negative emissions. Methane leakage and non-CO₂ greenhouse gases remain relevant.")
+    with st.expander("Environmental assumptions and limitations"):
         for item in se["limitations"]:
             st.write("• " + item)
+        st.write("The land estimates cover solar PV area only. They do not quantify the complete land footprint or all local ecological and social impacts of the proposed energy infrastructure.")
 
 elif page == "Interactive scenario explorer":
     st.header("Interactive scenario explorer — financial sensitivity")
