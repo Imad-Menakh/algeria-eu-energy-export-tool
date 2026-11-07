@@ -78,14 +78,7 @@ if page == "Research overview":
     st.write("The thesis investigates how Algeria could transition towards a 100% renewable energy system by 2050 while potentially supplying energy to Europe through three export pathways: electricity, green hydrogen and e-methane.")
     st.subheader("Research objective")
     st.write("The research compares a domestic renewable-energy pathway with three export-oriented pathways. It assesses their energy-system configurations and considers their technical, economic, social and environmental implications.")
-    st.subheader("Four dimensions considered in the research")
-    st.markdown("""
-    - **Technical:** energy-system configuration, renewable generation, storage, energy balances and export infrastructure.
-    - **Economic:** investment and system costs, export revenues, profitability and levelised cost of export (LCOX).
-    - **Social:** employment, water access, regional equity and socioeconomic development.
-    - **Environmental:** land requirements, energy-related water demand and emissions.
-    """)
-    st.subheader("Research questions")
+       st.subheader("Research questions")
     st.write("To achieve its objectives, the thesis investigates three main research questions:")
     st.markdown("""
     **1. Technical potential and infrastructure**  
@@ -96,6 +89,13 @@ if page == "Research overview":
 
     **3. Social and environmental implications**  
     What potential social and environmental benefits could renewable energy exports bring to Algerian communities and society more broadly?
+    """)
+    st.subheader("Four dimensions considered in the research")
+    st.markdown("""
+    - **Technical:** energy-system configuration, renewable generation, storage, energy balances and export infrastructure.
+    - **Economic:** investment and system costs, export revenues, profitability and levelised cost of export (LCOX).
+    - **Social:** employment, water access, regional equity and socioeconomic development.
+    - **Environmental:** land requirements, energy-related water demand and emissions.
     """)
     st.info("These questions guide the Technical Assessment, Scenario Comparison, Social Assessment and Environmental Assessment. The dashboard presents the thesis findings and distinguishes them from additional calculations or interpretations.")
 
