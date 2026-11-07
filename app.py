@@ -110,6 +110,18 @@ if page == "Research overview":
     b.metric("Export pathways assessed", "3")
     c.metric("Energy-system model", "EnergyPLAN 16.3")
     st.info("Domestic final energy demand is not the same as total energy generation. Electricity, hydrogen or e-methane produced for export is additional to the domestic final-demand requirement. The thesis gives the 2019 and 2050 demand totals in Table 6 (p. 63); the same 2050 domestic demand assumption is used when comparing the four 2050 pathways.")
+    st.subheader("Research questions")
+    st.write("To address its objectives, the thesis investigates three main questions:")
+    st.markdown("""
+    **1. Technical potential and infrastructure**  
+    What is Algeria's potential to export renewable electricity, green hydrogen and e-methane to Europe, and what technical and infrastructure requirements would these pathways involve?
+
+    **2. Economic competitiveness**  
+    How do the costs and economic benefits of the three export pathways compare with one another and with Algeria's existing fossil-fuel-based export system?
+
+    **3. Social and environmental implications**  
+    What potential social and environmental benefits could renewable energy exports bring to Algerian communities and society more broadly?
+    """)
     st.subheader("Four dimensions considered")
     st.markdown("""
     - **Technical:** energy-system configuration, renewable generation, storage, energy balances and export infrastructure.
@@ -117,7 +129,7 @@ if page == "Research overview":
     - **Social:** employment, water access, regional equity and socioeconomic development.
     - **Environmental:** land requirements, energy-related water demand and emissions.
     """)
-    st.caption("The detailed results and assumptions are presented in the corresponding assessment sections. The thesis is the primary reference for reported findings.")
+    st.caption("The research questions provide the framework for the assessment sections below. The thesis is the primary reference for reported findings.")
 
 elif page == "Renewable energy siting":
     st.header("Renewable energy siting assessment")
@@ -243,7 +255,8 @@ elif page == "Renewable energy siting":
 
 elif page == "Technical assessment":
     st.header("Technical assessment")
-    st.write("This module presents the EnergyPLAN reference configurations and the technical infrastructure described in the thesis.")
+    st.write("This section addresses the first research question: Algeria's potential to export renewable electricity, green hydrogen and e-methane to Europe, together with the energy-system configurations, storage and export infrastructure considered in the thesis.")
+    st.info("The figures below are thesis scenario results and technical assumptions. They describe modelled configurations; they do not by themselves demonstrate that the projects or export infrastructure have been built or are ready for implementation.")
     tech = load_data("technical_results.json")
     tech_df = pd.DataFrame(tech["scenarios"])
     selected = st.selectbox("Select a scenario", tech_df["name"].tolist())
@@ -253,6 +266,7 @@ elif page == "Technical assessment":
     b.metric("Solar PV capacity", f"{row['pv_MW']:,.0f} MW")
     c.metric("Electrolyser capacity", f"{row['electrolyser_MW']:,.0f} MW")
     st.subheader("Scenario configuration")
+    st.caption("Installed capacities are power ratings (MW); annual wind and solar generation are energy quantities (TWh/year). Storage capacities are shown separately in GWh. These units describe different aspects of the system and should not be compared as if they were interchangeable.")
     st.dataframe(tech_df.rename(columns={
         "name":"Scenario","wind_MW":"Wind capacity (MW)","pv_MW":"PV capacity (MW)",
         "wind_TWh":"Wind generation (TWh)","pv_TWh":"PV generation (TWh)",
@@ -269,7 +283,8 @@ elif page == "Technical assessment":
     gen["Technology"] = gen["Technology"].map({"wind_TWh":"Onshore wind","pv_TWh":"Solar PV"})
     st.plotly_chart(px.bar(gen,x="name",y="Generation (TWh/year)",color="Technology",barmode="group",title="Wind and PV generation"),use_container_width=True)
     st.subheader("Storage requirements")
-    st.dataframe(tech_df[["name","battery_GWh","hydrogen_GWh","gas_GWh"]].rename(columns={"name":"Scenario","battery_GWh":"Battery (GWh)","hydrogen_GWh":"Hydrogen (GWh)","gas_GWh":"Gas (GWh)"}),hide_index=True,use_container_width=True)
+    st.dataframe(tech_df[["name","battery_GWh","hydrogen_GWh","gas_GWh"]].rename(columns={"name":"Scenario","battery_GWh":"Battery storage (GWh)","hydrogen_GWh":"Hydrogen storage (GWh)","gas_GWh":"Gas storage (GWh)"}),hide_index=True,use_container_width=True)
+    st.caption("Storage capacities represent stored-energy capacity, not annual generation. Electricity discharged from storage is not new primary generation and should not be counted again as additional energy production.")
     st.metric("Critical excess electricity production — electricity export",f"{tech['notes']['electricity_export_CEEP_TWh']} TWh/year")
     st.write(f"The electricity export case models {tech['notes']['electricity_export_input_TWh']} TWh/year entering the export chain. The thesis assumes {tech['notes']['electricity_export_losses_TWh']} TWh of losses, leaving {tech['notes']['electricity_export_net_TWh']} TWh/year delivered. Flexible demand is estimated at {tech['notes']['flexible_demand_TWh']} TWh/year.")
     with st.expander("Electricity HVDC routes — thesis Tables 15–16"):
