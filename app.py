@@ -484,51 +484,143 @@ elif page == "Economic assessment":
 
 elif page == "Social assessment":
     st.header("Social assessment")
+    st.write(
+        "The thesis examines the potential social benefits of the 2050 energy transition, "
+        "with particular attention to employment creation, improved access to water and "
+        "the development of southern regions. The employment figures are modelled estimates."
+    )
+
     se = load_data("social_environment.json")
     emp = pd.DataFrame(se["employment"])
-    st.write("The thesis estimates employment across the domestic base and three export pathways. Permanent jobs and temporary job-years are shown separately because they represent different types and durations of employment.")
-    a,b = st.columns(2)
-    a.metric("Highest permanent employment", f"{emp['permanent_jobs'].max():,.0f} jobs", "Electricity export")
-    b.metric("Highest temporary employment", f"{emp['temporary_job_years'].max():,.0f} job-years", "Electricity export")
-    st.subheader("Employment estimates by scenario")
-    st.dataframe(emp.rename(columns={"scenario":"Scenario","permanent_jobs":"Permanent jobs (annual)","temporary_job_years":"Temporary employment (job-years)"}),hide_index=True,use_container_width=True)
-    chart = emp.melt(id_vars="scenario",value_vars=["permanent_jobs","temporary_job_years"],var_name="Employment type",value_name="Estimated total")
-    chart["Employment type"] = chart["Employment type"].map({"permanent_jobs":"Permanent jobs","temporary_job_years":"Temporary job-years"})
-    st.plotly_chart(px.bar(chart,x="scenario",y="Estimated total",color="Employment type",barmode="group",title="Employment estimates (different units; compare within each category)"),use_container_width=True)
+
+    st.subheader("Employment estimates across the 2050 scenarios")
+    st.write(
+        "The thesis separates employment into two categories. Permanent jobs are ongoing "
+        "annual positions associated with operation and maintenance, fuel supply and "
+        "desalination. Temporary employment is expressed in job-years and is associated "
+        "with time-limited activities such as manufacturing, construction, installation and "
+        "transmission infrastructure."
+    )
+
+    st.markdown("**Permanent employment — ongoing jobs per year**")
+    st.plotly_chart(
+        px.bar(
+            emp, x="scenario", y="permanent_jobs",
+            labels={"scenario": "2050 scenario", "permanent_jobs": "Permanent jobs (jobs/year)"},
+            title="Estimated permanent employment"
+        ),
+        use_container_width=True
+    )
+    st.dataframe(
+        emp[["scenario", "permanent_jobs"]].rename(columns={
+            "scenario": "Scenario", "permanent_jobs": "Permanent jobs (annual)"
+        }), hide_index=True, use_container_width=True
+    )
+
+    st.markdown("**Temporary employment — job-years over project implementation**")
+    st.plotly_chart(
+        px.bar(
+            emp, x="scenario", y="temporary_job_years",
+            labels={"scenario": "2050 scenario", "temporary_job_years": "Temporary employment (job-years)"},
+            title="Estimated temporary employment"
+        ),
+        use_container_width=True
+    )
+    st.dataframe(
+        emp[["scenario", "temporary_job_years"]].rename(columns={
+            "scenario": "Scenario", "temporary_job_years": "Temporary employment (job-years)"
+        }), hide_index=True, use_container_width=True
+    )
+    st.warning(
+        "These are modelled employment estimates, not observed or guaranteed jobs. "
+        "Permanent jobs and temporary job-years measure different things and must not be "
+        "added together or compared as if they were the same unit."
+    )
+
     with st.expander("How the thesis estimates employment"):
         method = se["employment_method"]
-        st.write("**Permanent:** " + method["permanent_jobs"])
-        st.write("**Temporary:** " + method["temporary_jobs"])
-        st.write("Adjustment factors: " + ", ".join(f"{k.replace('_',' ')} = {v}" for k,v in method["adjustment_factors"].items()) + ".")
-        st.write(f"Desalination: {method['desalination_factor_jobs_per_million_m3_year']} jobs per million m³/year; the thesis says this relationship is valid up to {method['desalination_factor_limit_million_m3_year']} million m³/year and cautions against extrapolation beyond it.")
-        st.write(f"HVDC transmission: {method['hvdc_jobs_per_billion_eur_investment']:,} jobs per €bn investment. Water infrastructure: {method['water_infrastructure_jobs_per_million_usd_investment']} jobs per US$ million investment.")
-    st.subheader("Water security and access — a social benefit")
-    w = se["water_access"]
-    a,b,c = st.columns(3)
-    a.metric("Water availability per capita", f"{w['water_per_capita_2050_m3_year']:,} m³/person/year", f"from {w['water_per_capita_current_m3_year']} m³/person/year")
-    b.metric("Water access target", f"{w['water_access_2050_percent']}%", f"from {w['water_access_current_percent']}% in {w['current_reference_year']}")
-    c.metric("Planned high-capacity pipelines", f">{w['planned_water_pipeline_km']:,} km")
-    st.write(f"The thesis describes a 2050 water-production system in which desalination supplies {w['desalination_share_2050_percent']}% of production. Coastal desalination facilities would be connected to inland and southern regions through a high-capacity pipeline network.")
-    st.caption("These are thesis projections and planned infrastructure, not achieved outcomes. Improved water access is presented here as a social benefit because it concerns household access, regional equity and quality of life.")
+        st.write("**Permanent employment:** " + method["permanent_jobs"])
+        st.write("**Temporary employment:** " + method["temporary_jobs"])
+        st.write(
+            "Adjustment factors: " + ", ".join(
+                f"{k.replace('_', ' ')} = {v}" for k, v in method["adjustment_factors"].items()
+            ) + "."
+        )
+        st.write(
+            f"Desalination employment factor: {method['desalination_factor_jobs_per_million_m3_year']} "
+            f"jobs per million m³/year. The thesis states that this relationship is valid up to "
+            f"{method['desalination_factor_limit_million_m3_year']} million m³/year and cautions "
+            "against extrapolating beyond that capacity."
+        )
+        st.write(
+            f"HVDC transmission: {method['hvdc_jobs_per_billion_eur_investment']:,} jobs per €bn "
+            f"of investment. Water infrastructure: "
+            f"{method['water_infrastructure_jobs_per_million_usd_investment']} jobs per US$ million "
+            "of investment."
+        )
 
-    st.subheader("Regional development and social equity in southern Algeria")
-    st.write("The thesis argues that improved water and electricity services could help address long-standing regional inequalities, particularly in southern Algeria, where the quality and reliability of electricity supply and access to safe water are described as more limited.")
+    st.subheader("Water security and access")
+    w = se["water_access"]
+    a, b, c = st.columns(3)
+    a.metric(
+        "Water availability per capita by 2050",
+        f"{w['water_per_capita_2050_m3_year']:,} m³/person/year",
+        f"from {w['water_per_capita_current_m3_year']} m³/person/year"
+    )
+    b.metric(
+        "National water-access target",
+        f"{w['water_access_2050_percent']}%",
+        f"from {w['water_access_current_percent']}% in {w['current_reference_year']}"
+    )
+    c.metric("Planned water pipelines", f">{w['planned_water_pipeline_km']:,} km")
+
+    st.write(
+        f"The thesis proposes a 2050 water-production system in which desalination accounts "
+        f"for {w['desalination_share_2050_percent']}% of water production. A network of high-capacity "
+        "pipelines would transport desalinated water from coastal facilities to inland and "
+        "southern regions. The thesis presents this infrastructure as a way to improve reliable "
+        "household water access, especially in historically underserved areas."
+    )
+    st.caption(
+        "These figures describe the thesis's 2050 scenario and planned infrastructure; they are "
+        "projections, not achieved outcomes. The national water-access figures and the separate "
+        "discussion of lower safe-water access in southern regions are differently framed in the thesis."
+    )
+
+    st.subheader("Potential benefits for southern Algeria")
+    st.write(
+        "The thesis argues that improved water and electricity services, together with major "
+        "infrastructure investment, could support more balanced regional development. It notes "
+        "that electricity access is already close to universal nationally, but that supply quality "
+        "and reliability remain concerns in some southern areas."
+    )
     st.markdown("""
-    **Potential social and regional benefits identified in the thesis**
-    - More reliable water supplies for households in remote and historically underserved areas.
-    - Better conditions for local agriculture and livestock development.
-    - Support for new population centres and a more balanced distribution of population and economic activity.
-    - Improved logistics, lower transport costs and stronger local economic hubs.
-    - Potential expansion of public services, including education and healthcare, as well as tourism and hospitality.
-    - Vocational training and local workforce development to help residents access jobs created by the transition.
+    **Potential benefits discussed in the thesis**
+    - More reliable water supplies for households in remote and underserved areas.
+    - Better conditions for local agriculture and livestock activities.
+    - Support for new population centres and a more balanced distribution of economic activity.
+    - Improved logistics, lower transport costs and the development of local economic hubs.
+    - Potential improvements in public services, including education and healthcare, and opportunities for tourism and hospitality.
+    - Vocational training and local workforce development linked to the emerging renewable-energy sector.
     """)
-    st.info("These are expected co-benefits discussed in the thesis, not quantified or guaranteed outcomes. Their realisation depends on infrastructure delivery, local workforce development and the availability of public services.")
+    st.info(
+        "These are potential co-benefits discussed by the thesis, not quantified or guaranteed "
+        "outcomes. Their realisation depends on infrastructure delivery, local skills development "
+        "and the availability of supporting public services."
+    )
 
     st.subheader("Water stress and implementation risks")
-    st.write(f"The thesis anticipates that {w['water_stressed_population_2050_description']} could be affected by water stress by 2050, alongside an anticipated {w['rainfall_decline_2050_percent']}% decline in national rainfall.")
-    st.warning("The thesis also highlights a transition risk: if desalination and water-transmission infrastructure lag behind demand, some southern areas may remain dependent on groundwater in the short term. This could increase pressure on local aquifers. The timing and geographical coverage of water infrastructure therefore matter.")
-    st.caption("The thesis reports national water access increasing from 70.6% to 100%. Its discussion of the southern regions separately describes current safe-water access as around 70%; these are retained as differently framed statements rather than treated as identical measurements.")
-    st.warning("Employment values are modelled estimates, not guaranteed jobs. Permanent jobs are annual positions; temporary employment is measured in job-years. Do not add the two categories together.")
+    st.write(
+        f"The thesis anticipates that {w['water_stressed_population_2050_description']} could be "
+        f"affected by water stress by 2050, alongside an anticipated {w['rainfall_decline_2050_percent']}% "
+        "decline in national rainfall."
+    )
+    st.warning(
+        "The thesis identifies a risk if desalination and water-transmission infrastructure "
+        "develop more slowly than demand: some southern areas may remain dependent on groundwater, "
+        "increasing pressure on local aquifers. The timing and geographical coverage of the network "
+        "are therefore important to the projected social benefits."
+    )
 
 elif page == "Environmental assessment":
     st.header("Environmental assessment")
