@@ -78,7 +78,7 @@ if page == "Research overview":
     st.write("The thesis investigates how Algeria could transition towards a 100% renewable energy system by 2050 while potentially supplying energy to Europe through three export pathways: electricity, green hydrogen and e-methane.")
     st.subheader("Research objective")
     st.write("The research compares a domestic renewable-energy pathway with three export-oriented pathways. It assesses their energy-system configurations and considers their technical, economic, social and environmental implications.")
-       st.subheader("Research questions")
+    st.subheader("Research questions")
     st.write("To achieve its objectives, the thesis investigates three main research questions:")
     st.markdown("""
     **1. Technical potential and infrastructure**  
