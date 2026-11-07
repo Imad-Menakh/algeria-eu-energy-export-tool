@@ -78,21 +78,38 @@ if page == "Research overview":
     st.write("The thesis investigates how Algeria could transition towards a 100% renewable energy system by 2050 while potentially supplying energy to Europe through three export pathways: electricity, green hydrogen and e-methane.")
     st.subheader("Research objective")
     st.write("The research compares a domestic renewable-energy pathway with three export-oriented pathways. It assesses their energy-system configurations and considers their technical, economic, social and environmental implications.")
-    st.subheader("The five scenarios")
+    st.subheader("The five scenarios and their purpose")
     scenario_overview = pd.DataFrame([
-        {"Scenario": "Algeria 2019 baseline", "Role in the study": "Reference for Algeria's existing energy system"},
-        {"Scenario": "2050 Domestic Base", "Role in the study": "A 100% renewable energy system designed to meet domestic demand"},
-        {"Scenario": "2050 Electricity Export", "Role in the study": "Domestic transition combined with electricity exports via HVDC"},
-        {"Scenario": "2050 Green Hydrogen Export", "Role in the study": "Domestic transition combined with green hydrogen exports"},
-        {"Scenario": "2050 E-methane Export", "Role in the study": "Domestic transition combined with e-methane exports"},
+        {"Scenario": "Algeria 2019 baseline", "Purpose": "Historical reference for Algeria's energy system"},
+        {"Scenario": "2050 Domestic Base", "Purpose": "100% renewable system designed to meet domestic demand"},
+        {"Scenario": "2050 Electricity Export", "Purpose": "Domestic transition plus electricity exports through HVDC"},
+        {"Scenario": "2050 Green Hydrogen Export", "Purpose": "Domestic transition plus green hydrogen exports"},
+        {"Scenario": "2050 E-methane Export", "Purpose": "Domestic transition plus e-methane exports"},
     ])
     st.dataframe(scenario_overview, hide_index=True, use_container_width=True)
-    st.subheader("Domestic energy demand")
+
+    st.subheader("Final energy demand: domestic requirement")
+    st.write("The thesis reports final energy demand for Algeria's domestic use. The 2050 export scenarios retain this domestic demand requirement; the energy produced for export is additional to it.")
+    demand_df = pd.DataFrame([
+        {
+            "Period": "2019",
+            "Scenario(s)": "Algeria 2019 baseline",
+            "Domestic final energy demand (TWh/year)": 465.95,
+            "Reference": "Thesis Table 6, p. 63",
+        },
+        {
+            "Period": "2050",
+            "Scenario(s)": "Domestic Base; Electricity Export; Green Hydrogen Export; E-methane Export",
+            "Domestic final energy demand (TWh/year)": 908.72,
+            "Reference": "Same domestic demand assumption across all four 2050 scenarios",
+        },
+    ])
+    st.dataframe(demand_df, hide_index=True, use_container_width=True)
     a, b, c = st.columns(3)
-    a.metric("2050 final energy demand", "908.72 TWh/year")
+    a.metric("2050 domestic final demand", "908.72 TWh/year")
     b.metric("Export pathways assessed", "3")
     c.metric("Energy-system model", "EnergyPLAN 16.3")
-    st.info("The 908.72 TWh/year figure refers to Algeria's modelled domestic final energy demand in 2050. It is not total energy generation and does not include the energy exported through the three export pathways.")
+    st.info("Domestic final energy demand is not the same as total energy generation. Electricity, hydrogen or e-methane produced for export is additional to the domestic final-demand requirement. The thesis gives the 2019 and 2050 demand totals in Table 6 (p. 63); the same 2050 domestic demand assumption is used when comparing the four 2050 pathways.")
     st.subheader("Four dimensions considered")
     st.markdown("""
     - **Technical:** energy-system configuration, renewable generation, storage, energy balances and export infrastructure.
@@ -314,6 +331,7 @@ elif page == "Scenario comparison":
         if is_2019:
             rows.append({
                 "Scenario": label,
+                "Domestic final energy demand (TWh/y)": 465.95,
                 "Technical — wind + PV generation (TWh/y)": supplementary_2019["wind_pv_generation_TWh_year"],
                 "Technical — battery storage (GWh)": supplementary_2019["battery_storage_GWh"],
                 "Economic — export product": "Not reported for 2019 baseline",
@@ -331,6 +349,7 @@ elif page == "Scenario comparison":
         product = "No exports" if not econ_key else {"Electricity":"Electricity", "Green hydrogen":"Green hydrogen", "E-methane":"E-methane"}[econ_key]
         rows.append({
             "Scenario": label,
+            "Domestic final energy demand (TWh/y)": 908.72,
             "Technical — wind + PV generation (TWh/y)": round(t.get("wind_TWh", 0) + t.get("pv_TWh", 0), 2) if t else "Not reported",
             "Technical — battery storage (GWh)": t.get("battery_GWh", "Not reported"),
             "Economic — export product": product,
@@ -346,7 +365,16 @@ elif page == "Scenario comparison":
     comparison = pd.DataFrame(rows)
 
     st.subheader("At-a-glance comparison across the four dimensions")
-    st.dataframe(comparison, hide_index=True, use_container_width=True)
+    st.write("Use the tabs to compare each assessment dimension separately. This keeps the scenario comparison readable without combining unrelated units in one very wide table.")
+    tab_tech, tab_econ, tab_social, tab_environment = st.tabs(["Technical", "Economic", "Social", "Environmental"])
+    with tab_tech:
+        st.dataframe(comparison[["Scenario", "Domestic final energy demand (TWh/y)", "Technical — wind + PV generation (TWh/y)", "Technical — battery storage (GWh)", "Data provenance"]], hide_index=True, use_container_width=True)
+    with tab_econ:
+        st.dataframe(comparison[["Scenario", "Economic — export product", "Economic — export volume (TWh/y)", "Economic — revenue (€bn/y)", "Economic — reported net profit (€bn/y)"]], hide_index=True, use_container_width=True)
+    with tab_social:
+        st.dataframe(comparison[["Scenario", "Social — permanent jobs", "Social — temporary job-years"]], hide_index=True, use_container_width=True)
+    with tab_environment:
+        st.dataframe(comparison[["Scenario", "Environmental — total water demand (Gm³/y)", "Environmental — PV land (km²)"]], hide_index=True, use_container_width=True)
     st.caption("The thesis is the primary reference for the comparison. Selected 2019 technical, water-demand and land figures are supplementary information from the user's comparison table; they are not presented as thesis-reported results. 2024 trade statistics are excluded from this scenario table because they fall outside its 2019 baseline and 2050 thesis-scenario scope.")
     with st.expander("How to read the data and supplementary 2019 figures"):
         st.markdown("""
