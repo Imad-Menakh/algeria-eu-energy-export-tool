@@ -61,7 +61,6 @@ st.info("The final thesis is the primary reference for published results. Intera
 
 pages = [
     "Research overview",
-    "Research questions",
     "Scenario comparison",
     "Renewable energy siting",
     "Technical assessment",
@@ -86,6 +85,20 @@ if page == "Research overview":
     - **Social:** employment, water access, regional equity and socioeconomic development.
     - **Environmental:** land requirements, energy-related water demand and emissions.
     """)
+    st.subheader("Research questions")
+    st.write("To achieve its objectives, the thesis investigates three main research questions:")
+    st.markdown("""
+    **1. Technical potential and infrastructure**  
+    What is Algeria's potential to export renewable electricity, green hydrogen and e-methane to Europe, and what technical and infrastructure requirements would these pathways involve?
+
+    **2. Economic competitiveness**  
+    How do the costs and economic benefits of the three export pathways compare with one another and with Algeria's existing fossil-fuel-based export system?
+
+    **3. Social and environmental implications**  
+    What potential social and environmental benefits could renewable energy exports bring to Algerian communities and society more broadly?
+    """)
+    st.info("These questions guide the Technical Assessment, Scenario Comparison, Social Assessment and Environmental Assessment. The dashboard presents the thesis findings and distinguishes them from additional calculations or interpretations.")
+
     st.subheader("The five scenarios and their purpose")
     scenario_overview = pd.DataFrame([
         {"Scenario": "Algeria 2019 baseline", "Purpose": "Historical reference for Algeria's energy system"},
@@ -119,21 +132,6 @@ if page == "Research overview":
     c.metric("Energy-system model", "EnergyPLAN 16.3")
     st.info("Domestic final energy demand is not the same as total energy generation. Electricity, hydrogen or e-methane produced for export is additional to the domestic final-demand requirement. The thesis gives the 2019 and 2050 demand totals in Table 6 (p. 63); the same 2050 domestic demand assumption is used when comparing the four 2050 pathways.")
     st.caption("The research questions provide the framework for the assessment sections below. The thesis is the primary reference for reported findings.")
-
-elif page == "Research questions":
-    st.header("Research questions")
-    st.write("To achieve its objectives, the thesis investigates three main research questions:")
-    st.markdown("""
-    **1. Technical potential and infrastructure**  
-    What is Algeria's potential to export renewable electricity, green hydrogen and e-methane to Europe, and what technical and infrastructure requirements would these pathways involve?
-
-    **2. Economic competitiveness**  
-    How do the costs and economic benefits of the three export pathways compare with one another and with Algeria's existing fossil-fuel-based export system?
-
-    **3. Social and environmental implications**  
-    What potential social and environmental benefits could renewable energy exports bring to Algerian communities and society more broadly?
-    """)
-    st.info("These questions guide the Technical Assessment, Scenario Comparison, Social Assessment and Environmental Assessment. The dashboard presents the thesis findings and distinguishes them from additional calculations or interpretations.")
 
 elif page == "Renewable energy siting":
     st.header("Renewable energy siting assessment")
