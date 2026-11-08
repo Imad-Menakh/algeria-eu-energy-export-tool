@@ -1,5 +1,6 @@
 import json
 import io
+import base64
 from pathlib import Path
 import pandas as pd
 import plotly.express as px
@@ -21,10 +22,10 @@ st.caption("An interactive presentation of the findings of *Powering EU?* (2025)
 st.info("The final thesis is the primary reference for published results. Interactive sensitivities are separate and do not replace EnergyPLAN modelling.")
 
 pages = [
-    "Research overview", "Four assessment dimensions", "Renewable energy siting",
-    "Algeria's energy system", "Technical assessment", "Five-scenario comparison", "Export scenario comparison", "Economic assessment",
-    "Social assessment", "Environmental assessment", "Interactive scenario explorer",
-    "Methodology and sources"
+    "Research overview", "Renewable energy siting", "Technical assessment",
+    "Scenario comparison", "Social assessment", "Environmental assessment",
+    "Interactive scenario explorer", "Methodology and sources",
+    "Thesis limitations and critical considerations", "Future development"
 ]
 page = st.sidebar.radio("Research modules", pages)
 
@@ -301,7 +302,7 @@ elif page == "Technical assessment":
         st.warning("Battery and gas storage values are transcribed from the thesis storage discussion and scenario tables. Where table and narrative figures differ, they should be interpreted with their source context; older workbooks are not used to overwrite thesis results.")
     st.caption("Sources: thesis Tables 9–18 and Section 4.2, approximately pp. 78–95.")
 
-elif page == "Five-scenario comparison":
+elif page == "Scenario comparison":
     st.header("Five-scenario comparison")
     st.write("Compare the 2019 baseline and four 2050 pathways across the thesis’s technical, economic, social and environmental assessment dimensions.")
     st.info("The comparison preserves the thesis’s source coverage. Where the thesis dataset supplied for this dashboard does not provide a comparable indicator for a scenario, the table shows ‘Not reported’ rather than estimating or filling the gap.")
@@ -456,7 +457,6 @@ elif page == "Five-scenario comparison":
         - This page compares published reference values; it does not run EnergyPLAN or establish new system-feasibility results.
         """)
 
-elif page == "Export scenario comparison":
     st.header("Export scenario comparison")
     view = exports[["scenario","export_volume_TWh_year","market_price_EUR_MWh","annual_revenue_EUR_bn","reported_net_profit_EUR_bn","LCOX_EUR_MWh"]].copy()
     view.columns = ["Export pathway","Delivered exports (TWh/year)","Market price (€/MWh)","Revenue (€bn/year)","Reported net profit (€bn/year)","LCOX (€/MWh)"]
@@ -467,7 +467,6 @@ elif page == "Export scenario comparison":
     with y:
         st.plotly_chart(px.bar(exports,x="scenario",y="LCOX_EUR_MWh",title="Levelised cost of export (LCOX)",labels={"scenario":"Pathway","LCOX_EUR_MWh":"€/MWh"}),use_container_width=True)
 
-elif page == "Economic assessment":
     st.header("Economic assessment")
     st.write("Published thesis reference values.")
     st.dataframe(exports[["scenario","annual_revenue_EUR_bn","annual_export_cost_for_profit_EUR_bn","reported_net_profit_EUR_bn","incremental_system_cost_for_LCOX_EUR_bn","LCOX_EUR_MWh"]].rename(columns={
@@ -707,7 +706,7 @@ elif page == "Interactive scenario explorer":
     c.metric("Indicative net profit",f"€{profit:,.3f}bn/year")
     st.warning("Financial sensitivity only. This does not rerun EnergyPLAN or recalculate hourly generation, demand, storage, curtailment, transmission losses or physical system feasibility. Changing export volume does not demonstrate that the energy system can deliver it.")
 
-else:
+elif page == "Methodology and sources":
     st.header("Methodology and sources")
     st.markdown("""
     **Modelling approach:** EnergyPLAN 16.3 hourly energy-system modelling; LUT-DEMAND for 2050 demand; PV profiles from PVGIS; technical, economic, social and environmental assessment.
@@ -720,6 +719,16 @@ else:
     Discrepancies are documented. Supporting workbooks do not silently overwrite thesis reference values.
     """)
     st.write("For the siting assessment, the principal reference is Appendix 2, including Tables 2.1 and 2.2 and Figure 2.1.")
+
+elif page == "Thesis limitations and critical considerations":
+    st.header("Thesis limitations and critical considerations")
+    st.write("This section distinguishes limitations acknowledged in the thesis from additional observations identified when reviewing the thesis results and supporting material.")
+    st.info("The detailed limitations content is being developed separately. This page is reserved so that limitations are not mixed into the reported scenario results.")
+
+elif page == "Future development":
+    st.header("Future development")
+    st.write("This section identifies possible extensions to the dashboard and analysis. These are prospective developments, not findings of the thesis.")
+    st.info("Potential extensions include broader scenario sensitivities, additional infrastructure assumptions, updated data sources and more detailed spatial analysis where reliable geographic data become available.")
 
 st.divider()
 st.caption("Reference: Imadeddine Menakh (2025), *Powering EU? – Energy scenarios for exporting electricity, green hydrogen and e-methane from Algeria to Europe*.")
