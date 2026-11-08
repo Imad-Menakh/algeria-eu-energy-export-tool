@@ -18,6 +18,11 @@ sites = pd.DataFrame(load_data("siting_sites.json"))
 st.title("Algeria Energy Transition Explorer")
 st.caption("An interactive presentation of the findings of *Powering EU?* (2025)")
 st.info("The final thesis is the primary reference for published results. Interactive sensitivities are separate and do not replace EnergyPLAN modelling.")
+st.caption(
+    "Interpretation note: thesis scenario results, modelled estimates and potential co-benefits "
+    "are projections or analytical estimates, not observed or guaranteed outcomes. Their "
+    "realisation depends on implementation, infrastructure delivery and relevant enabling conditions."
+)
 
 pages = [
     "Research overview", "Renewable energy siting", "Technical assessment",
@@ -656,12 +661,6 @@ elif page == "Social assessment":
     - Potential improvements in public services, including education and healthcare, and opportunities for tourism and hospitality.
     - Vocational training and local workforce development linked to the emerging renewable-energy sector.
     """)
-    st.info(
-        "These are potential co-benefits discussed by the thesis, not quantified or guaranteed "
-        "outcomes. Their realisation depends on infrastructure delivery, local skills development "
-        "and the availability of supporting public services."
-    )
-
     st.subheader("Implementation considerations")
     st.warning(
         "If desalination, dams and water-transmission infrastructure are delayed or do not reach "
@@ -673,25 +672,87 @@ elif page == "Social assessment":
 elif page == "Environmental assessment":
     st.header("Environmental assessment")
     se = load_data("social_environment.json")
-    st.caption("This section covers environmental pressures from the energy system. Household access to clean water and regional water security are presented under Social Assessment.")
-    st.subheader("Water demand across scenarios")
+    st.write(
+        "This section examines environmental pressures associated with the energy-system "
+        "pathways: water demand for energy production, land required for solar PV deployment "
+        "and the emissions results reported by the thesis. Household water access and regional "
+        "water security are discussed in the Social Assessment."
+    )
+
+    st.subheader("1. Water demand across the 2050 scenarios")
     water = pd.DataFrame(se["water_demand"])
-    st.dataframe(water.rename(columns={"scenario":"Scenario","non_energy_use_Gm3_year":"Non-energy use (Gm³/year)","hydrogen_production_water_Gm3_year":"Hydrogen production (Gm³/year)","pv_wind_operations_water_Gm3_year":"PV/wind operations (Gm³/year)","total_water_demand_Gm3_year":"Total demand (Gm³/year)"}),hide_index=True,use_container_width=True)
-    st.caption("Values transcribed from thesis Table 13. The thesis table also includes TWh energy-use rows; those are not water volumes and are not included in this table.")
-    st.subheader("Estimated solar PV land requirement")
+    water_display = water.rename(columns={
+        "scenario": "Scenario",
+        "non_energy_use_Gm3_year": "Non-energy use (Gm³/year)",
+        "hydrogen_production_water_Gm3_year": "Hydrogen production (Gm³/year)",
+        "pv_wind_operations_water_Gm3_year": "PV/wind operations (Gm³/year)",
+        "total_water_demand_Gm3_year": "Total demand (Gm³/year)"
+    })
+    st.dataframe(water_display, hide_index=True, use_container_width=True)
+    st.plotly_chart(
+        px.bar(water, x="scenario", y="total_water_demand_Gm3_year",
+               title="Total water demand by scenario",
+               labels={"scenario": "2050 scenario", "total_water_demand_Gm3_year": "Water demand (Gm³/year)"}),
+        use_container_width=True
+    )
+    st.caption(
+        "Values are transcribed from thesis Table 13. The source table also contains energy-use "
+        "rows expressed in TWh; these are not water volumes and are excluded from this comparison. "
+        "The figures distinguish water used for non-energy purposes, hydrogen production and PV/wind operations."
+    )
+
+    st.subheader("2. Estimated solar PV land requirements")
     land = pd.DataFrame(se["solar_land_use"])
-    st.dataframe(land.rename(columns={"scenario":"Scenario","pv_generation_GWh_year":"PV generation (GWh/year)","land_km2":"Estimated PV land (km²)","share_site_02_percent":"Share of Site 02 (%)","share_national_area_percent":"Share of national area (%)"}),hide_index=True,use_container_width=True)
-    st.plotly_chart(px.bar(land,x="scenario",y="land_km2",title="Estimated land required for solar PV (km²)"),use_container_width=True)
-    st.caption("The thesis estimates PV land using 211.64 GWh/km²/year, based on 20% panel efficiency, 0.84 system efficiency, 0.24 capacity factor and 0.6 ground coverage ratio. This is a PV land estimate, not a complete footprint for all infrastructure.")
-    st.subheader("CO₂ emissions reported in the thesis")
+    land_display = land.rename(columns={
+        "scenario": "Scenario", "pv_generation_GWh_year": "PV generation (GWh/year)",
+        "land_km2": "Estimated PV land (km²)",
+        "share_site_02_percent": "Share of Site 02 (%)",
+        "share_national_area_percent": "Share of national area (%)"
+    })
+    st.dataframe(land_display, hide_index=True, use_container_width=True)
+    st.plotly_chart(
+        px.bar(land, x="scenario", y="land_km2",
+               title="Estimated land required for solar PV",
+               labels={"scenario": "2050 scenario", "land_km2": "Estimated PV land (km²)"}),
+        use_container_width=True
+    )
+    st.write(
+        "The estimated land requirement increases with the scale of solar PV generation in each "
+        "pathway. The thesis discusses the use of agrivoltaics as one possible way to combine "
+        "solar deployment with selected land uses."
+    )
+    st.caption(
+        "The thesis estimates PV land using 211.64 GWh/km²/year, based on 20% panel efficiency, "
+        "0.84 system efficiency, 0.24 capacity factor and 0.6 ground coverage ratio. This is a "
+        "PV land estimate, not the complete land or ecological footprint of all energy and export infrastructure."
+    )
+
+    st.subheader("3. CO₂ emissions reported in the thesis")
     em = se["emissions"]
-    a,b,c = st.columns(3)
-    a.metric("Domestic 2019", f"{em['domestic_2019']:.2f} Mt")
-    b.metric("Domestic 2050", f"{em['domestic_2050_all_scenarios']:.0f} Mt", "All modelled scenarios")
-    c.metric("E-methane export balance", f"{em['including_exports_2050']['E-methane Export']:.2f} Mt")
-    st.write("Including exports, the thesis reports 284.67 Mt in 2019, zero for electricity and hydrogen exports in 2050, and −116.18 Mt for e-methane exports.")
+    a, b, c = st.columns(3)
+    a.metric("Domestic energy — 2019", f"{em['domestic_2019']:.2f} Mt")
+    b.metric("Domestic energy — 2050", f"{em['domestic_2050_all_scenarios']:.0f} Mt", "All modelled 2050 scenarios")
+    c.metric("E-methane export balance — 2050", f"{em['including_exports_2050']['E-methane Export']:.2f} Mt")
+    st.write(
+        "Including exports, the thesis reports 284.67 Mt CO₂ in 2019, zero for the electricity "
+        "and green-hydrogen export scenarios in 2050, and −116.18 Mt for the e-methane export scenario."
+    )
+    st.warning(
+        "The negative e-methane result reflects the thesis's accounting treatment of captured CO₂ "
+        "allocated to importing countries. It should not be interpreted as independently verified, "
+        "full life-cycle net-negative emissions. Methane leakage and other non-CO₂ greenhouse-gas "
+        "emissions also remain relevant."
+    )
     st.warning(em["non_co2_note"])
-    with st.expander("Interpretation and limitations"):
+
+    st.subheader("4. Scope and environmental limitations")
+    st.write(
+        "The indicators above should be read within the boundaries of the thesis assessment. "
+        "The PV land figures do not represent the full footprint of transmission lines, storage, "
+        "conversion facilities or other infrastructure. Likewise, the reported emissions results "
+        "do not by themselves establish that every pathway has zero life-cycle greenhouse-gas emissions."
+    )
+    with st.expander("Additional interpretation and limitations from the thesis"):
         for item in se["limitations"]:
             st.write("• " + item)
 
