@@ -815,17 +815,86 @@ elif page == "Interactive scenario explorer":
 
 elif page == "Methodology and sources":
     st.header("Methodology and sources")
+    st.write(
+        "This section explains how the thesis developed its five energy-system scenarios, "
+        "which modelling tools and data sources it used, and how the dashboard organises "
+        "the resulting technical, economic, social and environmental evidence. The "
+        "description below follows the thesis methodology and appendices."
+    )
+
+    st.subheader("1. Research design and scenario framework")
+    st.write(
+        "The thesis compares Algeria's actual 2019 energy system with four 2050 pathways: "
+        "a domestic renewable-energy base case and three export-oriented pathways based "
+        "on electricity, green hydrogen and e-methane. The export pathways use solar and "
+        "wind as their primary renewable energy sources and differ mainly in the energy "
+        "carrier and export infrastructure considered."
+    )
+    st.info(
+        "The 2019 case is the historical reference. The 2050 cases are modelled scenarios "
+        "based on projected demand and stated assumptions; they are not observations or "
+        "guaranteed forecasts."
+    )
+
+    st.subheader("2. Energy-system modelling and input data")
+    method_rows = [
+        {"Tool or source": "EnergyPLAN 16.3", "Role described in the thesis": "Hourly energy-system simulation for the 2019 baseline and 2050 domestic and export scenarios; used to assess system operation, energy balances, costs and emissions."},
+        {"Tool or source": "LUT-DEMAND model", "Role described in the thesis": "Projection of 2050 domestic energy demand, including sectoral demand and hourly demand profiles informed by population, climate and sectoral activity."},
+        {"Tool or source": "PVGIS", "Role described in the thesis": "Generation of hourly solar photovoltaic potential profiles."},
+        {"Tool or source": "IEA energy statistics and Algerian national statistics", "Role described in the thesis": "Main inputs for the 2019 energy balance, complemented by national statistical publications."},
+        {"Tool or source": "Published studies and network-planning material", "Role described in the thesis": "Evidence used to frame potential European demand, export volumes, transmission routes and export infrastructure assumptions."},
+        {"Tool or source": "EnergyPLAN default parameters and cited cost methodology", "Role described in the thesis": "Technology efficiencies and the general cost structure, including the cost methodology attributed to Gulagi et al. (2017)."},
+    ]
+    st.dataframe(pd.DataFrame(method_rows), hide_index=True, use_container_width=True)
+    st.caption(
+        "The thesis identifies IEA energy statistics (2022) and Algerian national statistics "
+        "for the 2019 energy balance; LUT-DEMAND (Keiner et al., 2023) for demand projections "
+        "and profiles; and PVGIS for hourly PV potential profiles. Specific export assumptions "
+        "draw on the studies cited in the thesis, including Benasla et al. (2024), Neumann et "
+        "al. (2024), Gatzen et al. (2024) and related infrastructure studies."
+    )
+
+    st.subheader("3. Assessment methods used in the thesis")
+    assessment_rows = [
+        {"Assessment": "Technical", "Approach presented": "EnergyPLAN scenario outputs are used to examine generation, demand, storage, energy balances, excess electricity and export-system requirements."},
+        {"Assessment": "Economic", "Approach presented": "The thesis assesses infrastructure investment, system costs, export revenues, reported net profit and levelised cost of export (LCOX). Net-profit cost and incremental system cost used for LCOX are distinct calculations."},
+        {"Assessment": "Renewable-energy siting", "Approach presented": "A two-step process: preliminary spatial filtering followed by a multi-criteria assessment of four candidate zones using 14 indicators, criterion weights and Min–Max scoring on a 50–100 scale."},
+        {"Assessment": "Social", "Approach presented": "Employment impacts are estimated using technology- and investment-related employment factors and adjustment assumptions; water access and regional development are discussed as potential social implications."},
+        {"Assessment": "Environmental", "Approach presented": "The thesis examines energy-related water demand, estimated PV land requirements and reported CO₂/CO₂-equivalent emissions across the scenarios."},
+    ]
+    st.dataframe(pd.DataFrame(assessment_rows), hide_index=True, use_container_width=True)
+
+    st.subheader("4. Where to find the supporting methodology")
+    references = [
+        ("Main methodology", "Chapter 3 — scenario design, site selection and EnergyPLAN modelling."),
+        ("Scenario inputs and technical/economic parameters", "Appendix 1 — scenario data, technology parameters and infrastructure details."),
+        ("Renewable-energy siting", "Appendix 2 — site-selection methodology, criteria, weights and raw scoring data; see Tables 2.1 and 2.2 and Figure 2.1."),
+        ("Employment estimation", "Appendix 3 — employment impact estimation methodology and assumptions."),
+        ("Scenario results", "Chapter 4 and the associated results tables, including the energy-system, water-demand, infrastructure, LCOX, employment and emissions results."),
+    ]
+    for heading, detail in references:
+        st.markdown(f"**{heading}**  \
+{detail}")
+
+    st.subheader("5. Source hierarchy used by this dashboard")
     st.markdown("""
-    **Modelling approach:** EnergyPLAN 16.3 hourly energy-system modelling; LUT-DEMAND for 2050 demand; PV profiles from PVGIS; technical, economic, social and environmental assessment.
-
-    **Source hierarchy:**
-    1. Final 2025 master's thesis — primary reference for published results.
-    2. Updated supporting Excel workbooks — detailed calculations and inputs where consistent with the thesis.
-    3. Earlier workbooks and EnergyPLAN scenario files — historical development records.
-
-    Discrepancies are documented. Supporting workbooks do not silently overwrite thesis reference values.
+    1. **Final 2025 master's thesis** — the primary reference for published scenario results, reported values and the author's stated methodology.
+    2. **Supporting Excel workbooks and EnergyPLAN scenario files** — used to inspect detailed inputs and calculations, and to help investigate discrepancies where available.
+    3. **Earlier working files and intermediate calculations** — treated as development records rather than as replacements for the final thesis.
     """)
-    st.write("For the siting assessment, the principal reference is Appendix 2, including Tables 2.1 and 2.2 and Figure 2.1.")
+    st.warning(
+        "Where a supporting workbook differs from the final thesis, the dashboard retains "
+        "the thesis-reported value as its primary reference unless a specific correction has "
+        "been established and explained. Discrepancies are flagged rather than silently "
+        "reconciled. Interactive calculations in this dashboard are identified separately "
+        "and do not constitute a new EnergyPLAN simulation."
+    )
+    st.caption(
+        "Primary reference: Imadeddine Menakh (2025), *Powering EU? – Energy scenarios "
+        "for exporting electricity, green hydrogen and e-methane from Algeria to Europe*. "
+        "Tool versions, assumptions and source descriptions above reproduce the thesis "
+        "methodology; they do not represent an independent validation of the underlying models."
+    )
 
 elif page == "Thesis limitations and critical considerations":
     st.header("Thesis limitations and critical considerations")
