@@ -961,8 +961,65 @@ elif page == "Thesis limitations and critical considerations":
 
 elif page == "Future development":
     st.header("Future development")
-    st.write("This section identifies possible extensions to the dashboard and analysis. These are prospective developments, not findings of the thesis.")
-    st.info("Potential extensions include broader scenario sensitivities, additional infrastructure assumptions, updated data sources and more detailed spatial analysis where reliable geographic data become available.")
+    st.write(
+        "This section outlines practical ways the dashboard and its supporting analysis "
+        "could be developed further. These proposals extend beyond the work completed in "
+        "the thesis; they are not thesis findings, confirmed projects or features that are "
+        "already implemented."
+    )
+
+    st.subheader("1. Improve data transparency and traceability")
+    st.markdown("""
+    - Provide a clear source, reference and unit for each key indicator, including the relevant thesis table, figure or appendix where available.
+    - Maintain a distinction between values reported in the final thesis, values inspected in supporting workbooks, and calculations performed interactively by the dashboard.
+    - Record the date and source of any future data updates so that revised figures can be distinguished from the original 2025 thesis results.
+    """)
+
+    st.subheader("2. Develop more detailed spatial analysis")
+    st.markdown("""
+    - Integrate reliable, georeferenced boundaries for candidate renewable-energy zones when precise GIS data become available.
+    - Improve the spatial representation of solar and wind resources, transmission corridors, water infrastructure, settlements and environmentally sensitive areas.
+    - Assess land-use conflicts and potential effects on grazing, mobility and local livelihoods alongside technical suitability.
+    """)
+    st.caption(
+        "The current candidate-site boundaries and site-to-wilaya associations are indicative. "
+        "More detailed mapping should only be introduced when suitable geographic data can be verified."
+    )
+
+    st.subheader("3. Expand scenario and sensitivity analysis")
+    st.markdown("""
+    - Allow users to examine a wider range of assumptions for renewable-energy costs, technology performance, financing, export prices and infrastructure costs.
+    - Test how changes in domestic demand, export volumes, project timing and infrastructure availability affect the comparison between pathways.
+    - Make clear which calculations are dashboard-level sensitivities and which results would require a new EnergyPLAN simulation.
+    """)
+
+    st.subheader("4. Strengthen infrastructure and export-chain assessment")
+    st.markdown("""
+    - Refine the representation of electricity interconnectors, hydrogen transport options, existing gas pipelines and any additional capacity that an export pathway would require.
+    - Distinguish operational infrastructure from proposed, planned or assumed infrastructure, and document the status and capacity used in each scenario.
+    - Examine the implications of pipeline capacity, conversion and transport losses, cross-border arrangements and the allocation of infrastructure costs.
+    """)
+
+    st.subheader("5. Deepen social and environmental assessment")
+    st.markdown("""
+    - Improve employment estimates with more locally specific information on domestic manufacturing, construction, operation and maintenance, while keeping permanent jobs separate from temporary job-years.
+    - Examine water demand and water access at a more detailed regional level, including the assumptions behind desalination, pipelines and other water sources.
+    - Develop more comprehensive land-use and environmental indicators, including impacts that are not captured by PV panel-area estimates alone.
+    - Use transparent lifecycle boundaries and emissions assumptions when comparing CO₂ and other greenhouse-gas impacts across export pathways.
+    """)
+
+    st.subheader("6. Validation and future updates")
+    st.markdown("""
+    - Compare model assumptions and scenario outputs with newer official statistics, updated infrastructure information and subsequent research when these become available.
+    - Where possible, seek independent technical review of key assumptions, calculations and spatial inputs.
+    - Preserve the original thesis results as a reference point when updating the dashboard, and explain any changes rather than silently replacing earlier values.
+    """)
+
+    st.info(
+        "Development principle: prioritise improvements that can be supported by traceable "
+        "data and clearly documented methods. Greater detail should not be presented as "
+        "greater certainty unless the underlying evidence and modelling also improve."
+    )
 
 st.divider()
 st.caption("Reference: Imadeddine Menakh (2025), *Powering EU? – Energy scenarios for exporting electricity, green hydrogen and e-methane from Algeria to Europe*.")
