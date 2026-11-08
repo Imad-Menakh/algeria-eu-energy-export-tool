@@ -413,14 +413,58 @@ elif page == "Scenario comparison":
         st.plotly_chart(px.bar(gen, x="name", y="Generation (TWh/year)", color="Technology", barmode="group", title="Annual wind and PV generation — 2050 scenarios"), use_container_width=True)
         st.plotly_chart(px.bar(tech_df, x="name", y="battery_GWh", title="Battery storage requirements — 2050 scenarios", labels={"name":"2050 scenario", "battery_GWh":"Battery storage (GWh)"}), use_container_width=True)
 
-    st.subheader("Economic dimension")
-    st.write("Economic values are available for the three export pathways. The domestic scenarios have no export revenue or export profit in this comparison.")
-    econ_view = exports[["scenario", "export_volume_TWh_year", "annual_revenue_EUR_bn", "reported_net_profit_EUR_bn", "LCOX_EUR_MWh"]].rename(columns={
-        "scenario":"Export pathway", "export_volume_TWh_year":"Delivered exports (TWh/year)",
-        "annual_revenue_EUR_bn":"Revenue (€bn/year)", "reported_net_profit_EUR_bn":"Reported net profit (€bn/year)",
-        "LCOX_EUR_MWh":"LCOX (€/MWh)"})
-    st.dataframe(econ_view, hide_index=True, use_container_width=True)
-    st.plotly_chart(px.bar(exports, x="scenario", y="reported_net_profit_EUR_bn", title="Reported net profit by export pathway", labels={"scenario":"Export pathway", "reported_net_profit_EUR_bn":"€bn/year"}), use_container_width=True)
+    st.subheader("Economic dimension — export pathway comparison")
+    st.write(
+        "Economic indicators are available for the three export pathways. The domestic "
+        "baseline and domestic-base scenarios do not generate export revenue or export profit."
+    )
+    economic_detail = exports[[
+        "scenario", "export_volume_TWh_year", "market_price_EUR_MWh",
+        "annual_revenue_EUR_bn", "annual_export_cost_for_profit_EUR_bn",
+        "reported_net_profit_EUR_bn", "incremental_system_cost_for_LCOX_EUR_bn",
+        "LCOX_EUR_MWh"
+    ]].rename(columns={
+        "scenario": "Export pathway",
+        "export_volume_TWh_year": "Delivered exports (TWh/year)",
+        "market_price_EUR_MWh": "Market price (€/MWh)",
+        "annual_revenue_EUR_bn": "Revenue (€bn/year)",
+        "annual_export_cost_for_profit_EUR_bn": "Cost used for reported profit (€bn/year)",
+        "reported_net_profit_EUR_bn": "Reported net profit (€bn/year)",
+        "incremental_system_cost_for_LCOX_EUR_bn": "Incremental system cost for LCOX (€bn/year)",
+        "LCOX_EUR_MWh": "LCOX (€/MWh)"
+    })
+    st.dataframe(economic_detail, hide_index=True, use_container_width=True)
+    econ_chart_left, econ_chart_right = st.columns(2)
+    with econ_chart_left:
+        st.plotly_chart(
+            px.bar(exports, x="scenario", y="annual_revenue_EUR_bn",
+                   title="Annual export revenue",
+                   labels={"scenario": "Export pathway", "annual_revenue_EUR_bn": "€bn/year"}),
+            use_container_width=True
+        )
+    with econ_chart_right:
+        st.plotly_chart(
+            px.bar(exports, x="scenario", y="LCOX_EUR_MWh",
+                   title="Levelised cost of export (LCOX)",
+                   labels={"scenario": "Export pathway", "LCOX_EUR_MWh": "€/MWh"}),
+            use_container_width=True
+        )
+    with st.expander("How to interpret export costs, profit and LCOX"):
+        st.write(
+            "The thesis uses two different cost calculations. The export cost used in the "
+            "reported net-profit calculation is not the same as the incremental system cost "
+            "used to calculate LCOX. They should not be treated as interchangeable."
+        )
+        st.write(
+            "Incremental export system cost = total export-scenario system cost − total "
+            "domestic-base-scenario system cost."
+        )
+        st.write("LCOX = incremental annual system cost ÷ net annual export energy delivered.")
+        st.caption(
+            "The final thesis is the authoritative source for published results. Supporting "
+            "workbooks help explain calculations and discrepancies; they do not silently "
+            "overwrite thesis values."
+        )
 
     st.subheader("Social dimension")
     st.write("Employment figures cover the four 2050 scenarios. Permanent jobs are ongoing positions; temporary employment is expressed in job-years. These units are not added together.")
@@ -460,30 +504,6 @@ elif page == "Scenario comparison":
         - This page compares published reference values; it does not run EnergyPLAN or establish new system-feasibility results.
         """)
 
-    st.header("Export scenario comparison")
-    view = exports[["scenario","export_volume_TWh_year","market_price_EUR_MWh","annual_revenue_EUR_bn","reported_net_profit_EUR_bn","LCOX_EUR_MWh"]].copy()
-    view.columns = ["Export pathway","Delivered exports (TWh/year)","Market price (€/MWh)","Revenue (€bn/year)","Reported net profit (€bn/year)","LCOX (€/MWh)"]
-    st.dataframe(view, hide_index=True, use_container_width=True)
-    x,y = st.columns(2)
-    with x:
-        st.plotly_chart(px.bar(exports,x="scenario",y="annual_revenue_EUR_bn",title="Annual export revenue",labels={"scenario":"Pathway","annual_revenue_EUR_bn":"€bn/year"}),use_container_width=True)
-    with y:
-        st.plotly_chart(px.bar(exports,x="scenario",y="LCOX_EUR_MWh",title="Levelised cost of export (LCOX)",labels={"scenario":"Pathway","LCOX_EUR_MWh":"€/MWh"}),use_container_width=True)
-
-    st.header("Economic assessment")
-    st.write("Published thesis reference values.")
-    st.dataframe(exports[["scenario","annual_revenue_EUR_bn","annual_export_cost_for_profit_EUR_bn","reported_net_profit_EUR_bn","incremental_system_cost_for_LCOX_EUR_bn","LCOX_EUR_MWh"]].rename(columns={
-        "scenario":"Export pathway","annual_revenue_EUR_bn":"Revenue (€bn/year)",
-        "annual_export_cost_for_profit_EUR_bn":"Cost used for reported profit (€bn/year)",
-        "reported_net_profit_EUR_bn":"Reported net profit (€bn/year)",
-        "incremental_system_cost_for_LCOX_EUR_bn":"Incremental system cost for LCOX (€bn/year)",
-        "LCOX_EUR_MWh":"LCOX (€/MWh)"
-    }),hide_index=True,use_container_width=True)
-    with st.expander("Why are there two cost figures?"):
-        st.write("The thesis distinguishes the export cost used in the net-profit calculation from the incremental system cost used for LCOX. These are separate calculations and must not be treated as interchangeable.")
-        st.write("Incremental export system cost = total export-scenario system cost − total domestic base-scenario system cost.")
-        st.write("LCOX = incremental annual system cost ÷ net annual export energy delivered.")
-        st.caption("The final thesis is the authoritative source for published results. Supporting workbooks help explain calculations and discrepancies; they do not silently overwrite thesis values.")
 
 elif page == "Social assessment":
     st.header("Social assessment")
