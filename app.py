@@ -140,16 +140,18 @@ elif page == "Renewable energy siting":
     st.subheader("Step 1 — Candidate development zones")
     st.write("The thesis manually delineates four large candidate zones after excluding mountainous and steep-slope areas, high-density urban zones, northern Algeria, small or isolated areas and protected regions.")
     map_path = Path(__file__).parent / "assets" / "thesis_site_selection_map.png"
-    map_left, map_right = st.columns(2)
+    st.caption("The two maps are aligned for side-by-side comparison. The left map reproduces thesis Figure 2.1; the right map shows the historical 58-wilaya administrative reference and does not reproduce the exact candidate-zone polygons.")
+    map_left, map_right = st.columns(2, gap="medium")
     with map_left:
+        st.markdown("**Thesis Figure 2.1 — Candidate development zones**")
         if map_path.exists():
-            st.image(str(map_path), caption="Thesis Figure 2.1: Renewable energy development zones in Algeria (2050).", use_container_width=True)
+            st.image(str(map_path), use_container_width=True)
         else:
             st.warning("The thesis site-selection map image was not found in the assets folder.")
     with map_right:
-        render_site_admin_map()
+        render_site_admin_map(compact=True)
 
-    st.caption("The 58-wilaya map is an administrative reference showing wilayas named in Appendix 2; it does not reproduce the exact manually delineated candidate-zone polygons. The thesis does not provide precise GIS boundaries or coordinates for those zones.")
+    st.caption("The thesis does not provide precise GIS boundaries or coordinates for the manually delineated candidate zones. The 58-wilaya map is an administrative reference only.")
     site_choice = st.selectbox("Explore a candidate site", sites["site"].tolist(), key="siting_site_detail")
     selected_site = sites.loc[sites["site"] == site_choice].iloc[0]
     a, b, c = st.columns(3)
@@ -205,18 +207,25 @@ elif page == "Renewable energy siting":
             score_values = [[float(v) for v in row] for row in criteria["scores"]]
             interactive_scores = []
             for site_index in range(len(sites)):
-                weighted_score = sum(interactive_weights[i] * score_values[i][site_index] for i in range(len(criteria))) / weight_total
-                interactive_scores.append(weighted_score)
+                original_weights = [float(v) for v in criteria["weight"]]
+                weight_adjustment = sum(
+                    (interactive_weights[i] - original_weights[i]) * score_values[i][site_index]
+                    for i in range(len(criteria))
+                )
+                # Anchor the zero-change state to the thesis-reported total score.
+                # Subsequent changes apply the direct weighted-score difference.
+                thesis_baseline = float(sites.iloc[site_index]["score"])
+                interactive_scores.append(thesis_baseline + weight_adjustment)
             result = sites[["site", "region", "score", "rank"]].copy()
             result["Interactive weighted index"] = interactive_scores
             result = result.sort_values("Interactive weighted index", ascending=False).reset_index(drop=True)
             result["Interactive rank"] = range(1, len(result) + 1)
             result = result.rename(columns={"score":"Thesis total score", "rank":"Thesis rank"})
-            st.caption(f"Adjustable weight total: {weight_total:.2f}. The weighted-average calculation proportionally normalises the selected weights; original thesis weights remain unchanged.")
+            st.caption(f"Adjustable weight total: {weight_total:.2f}. At the original thesis weights, the interactive index reproduces the thesis-reported total score and ranking. Changes show the direct weighted-score adjustment from that baseline; the published thesis results remain unchanged.")
             st.dataframe(result[["site", "region", "Thesis rank", "Interactive weighted index", "Interactive rank"]].round({"Interactive weighted index":2}), hide_index=True, use_container_width=True)
             chart = px.bar(result, x="site", y="Interactive weighted index", color="Interactive rank", text="Interactive rank", title="Current ranking", labels={"site":"Candidate site", "Interactive weighted index":"Weighted index (50–100)", "Interactive rank":"New rank"})
             chart.update_traces(textposition="outside")
-            chart.update_yaxes(range=[45,105])
+            chart.update_yaxes(range=[0, max(180, float(result["Interactive weighted index"].max()) * 1.08)])
             st.plotly_chart(chart, use_container_width=True)
             winner = result.iloc[0]
             st.success(f"Currently ranked first: {winner['site']} ({winner['Interactive weighted index']:.2f}).")
@@ -567,6 +576,14 @@ elif page == "Social assessment":
         "not observed or guaranteed employment outcomes."
     )
 
+    with st.expander("Additional employment data and interpretation notes"):
+        st.markdown("""
+        - Employment figures are modelled estimates based on technology employment factors, investment assumptions and adjustment multipliers; they are not guaranteed jobs or observed employment.
+        - Permanent jobs are annual ongoing positions; temporary employment is measured in job-years. These units must not be added together or presented as equivalent.
+        - The desalination employment intensity is stated to be valid only up to plant capacity of 150 million m³/year; the thesis cautions that scaling to larger future plants makes predictions less reliable.
+        """)
+        st.caption("These qualifications are presented here with the social employment results because they directly concern the interpretation of employment estimates.")
+
     with st.expander("How the thesis estimates employment"):
         method = se["employment_method"]
         st.write("**Permanent employment:** " + method["permanent_jobs"])
@@ -794,7 +811,16 @@ elif page == "Environmental assessment":
         "do not by themselves establish that every pathway has zero life-cycle greenhouse-gas emissions."
     )
     with st.expander("Additional environmental data and interpretation notes"):
-        for item in se["limitations"]:
+        employment_note_markers = (
+            "Employment figures are modelled estimates",
+            "Permanent jobs are annual ongoing positions",
+            "desalination employment intensity is stated to be valid only up to plant capacity",
+        )
+        environmental_notes = [
+            item for item in se["limitations"]
+            if not any(marker.lower() in item.lower() for marker in employment_note_markers)
+        ]
+        for item in environmental_notes:
             st.write("• " + item)
         st.caption(
             "These notes combine qualifications stated in the thesis with clarifications "
@@ -947,12 +973,6 @@ elif page == "Thesis limitations and critical considerations":
 
     st.subheader("6. Specific corrections and inconsistencies identified in the thesis")
     st.markdown("""
-    **Figure 30 — Full-load-hours chart (thesis p. 98)**
-    - The legend/key orientation should be reversed for clarity: the scenario labels (2019, 2050 Base, 2050 Electricity, 2050 Hydrogen and 2050 E-methane) should identify the series, while generation technologies should be listed along the category axis.
-
-    **Table 22 — Energy and water access indicators (thesis p. 108)**
-    - The table title should be clarified to match its contents. The dashboard uses: *Comparison of current and 2050 energy and water access indicators in Algeria*.
-
     **Table 9 and domestic-base generation narrative (thesis pp. 78 and 88)**
     - Table 9 reports **2,134.33 TWh**; the later narrative reports **2,177.83 TWh**.
     - The supporting EnergyPLAN workbook reports **2,173.20 TWh** and lists **38.88 TWh** of condensing generation. Adding that condensing contribution to the Table 9 figure gives approximately **2,173.21 TWh**, consistent with the workbook total within rounding. The narrative's **2,177.83 TWh** is still 4.63 TWh higher and cannot be confirmed as the reconciled total from the available supporting calculations.
@@ -963,6 +983,12 @@ elif page == "Thesis limitations and critical considerations":
 
     **Growth multiple in the electricity-export narrative (thesis p. 88)**
     - The narrative states a **39-fold** increase relative to 2019 generation of 81.52 TWh. Using the supporting-workbook total of 3,085.15 TWh gives approximately **37.84-fold**. The 39-fold figure follows from the narrative's 3,179.58 TWh value, not from the workbook total.
+
+    **Figure 30 — Full-load-hours chart (thesis p. 98)**
+    - The legend/key orientation should be reversed for clarity: the scenario labels (2019, 2050 Base, 2050 Electricity, 2050 Hydrogen and 2050 E-methane) should identify the series, while generation technologies should be listed along the category axis.
+
+    **Table 22 — Energy and water access indicators (thesis p. 108)**
+    - The table title should be clarified to match its contents. The dashboard uses: *Comparison of current and 2050 energy and water access indicators in Algeria*.
     """)
     st.caption("The supporting workbook is used here to investigate and explain the discrepancies; workbook-derived figures are not presented as if they were published thesis values. The dashboard keeps source provenance visible.")
     st.info(
@@ -996,7 +1022,6 @@ elif page == "Future development":
 
     st.subheader("3. Improve energy-system modelling and scenario coverage")
     st.markdown("""
-    - Run additional EnergyPLAN scenarios for different export targets, including illustrative cases of 100 TWh/year and 1,000 TWh/year, before interpreting the financial sensitivity results as system-level outcomes.
     - Use alternative or complementary simulation tools to test system operation, flexibility, hourly balancing and infrastructure interactions.
     - Explore mixed-export scenarios and compare how combined export volumes affect generation, storage, curtailment, costs and domestic supply.
     - Examine the effects of future cost reductions in batteries, electrolysers, concentrated solar power (CSP) and carbon-capture systems.

@@ -79,13 +79,14 @@ def _style(feature):
         "fillOpacity": 0.48 if memberships else 0.08,
     }
 
-def render_site_admin_map():
-    st.subheader("Administrative reference map — 58 wilayas")
-    st.caption(
-        "This layer highlights the wilayas named in Appendix 2. It is an "
-        "administrative reference, not a digitisation of the exact manually "
-        "drawn candidate-zone boundaries in Figure 2.1."
-    )
+def render_site_admin_map(compact=False):
+    if not compact:
+        st.subheader("Administrative reference map — 58 wilayas")
+        st.caption(
+            "This layer highlights the wilayas named in Appendix 2. It is an "
+            "administrative reference, not a digitisation of the exact manually "
+            "drawn candidate-zone boundaries in Figure 2.1."
+        )
     try:
         geojson = load_wilaya_geojson()
     except Exception as exc:
@@ -120,19 +121,20 @@ def render_site_admin_map():
         ),
     ).add_to(m)
     folium.LayerControl(collapsed=False).add_to(m)
-    st_folium(m, use_container_width=True, height=620, returned_objects=[])
+    st_folium(m, use_container_width=True, height=312 if compact else 620, returned_objects=[])
 
-    st.markdown(
-        """
-        **How to read this layer**
-        - Coloured wilayas are named in the thesis as intersected by a candidate zone.
-        - Grey indicates an administrative wilaya listed under more than one site:
-          Beni Abbes (Sites 01 and 02) and Ouargla (Sites 02 and 03).
-        - Uncoloured wilayas are not listed in Appendix 2.
-        """
-    )
-    st.caption(
-        "Boundary data: syscli/algeria, 58-wilaya historical layer (2019–2026), "
-        "derived from OpenStreetMap/geoBoundaries; CC BY-SA 2.0. "
-        "Attribution: © OpenStreetMap contributors."
-    )
+    if not compact:
+        st.markdown(
+            """
+            **How to read this layer**
+            - Coloured wilayas are named in the thesis as intersected by a candidate zone.
+            - Grey indicates an administrative wilaya listed under more than one site:
+              Beni Abbes (Sites 01 and 02) and Ouargla (Sites 02 and 03).
+            - Uncoloured wilayas are not listed in Appendix 2.
+            """
+        )
+        st.caption(
+            "Boundary data: syscli/algeria, 58-wilaya historical layer (2019–2026), "
+            "derived from OpenStreetMap/geoBoundaries; CC BY-SA 2.0. "
+            "Attribution: © OpenStreetMap contributors."
+        )
