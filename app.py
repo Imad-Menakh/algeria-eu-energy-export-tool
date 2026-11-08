@@ -642,7 +642,16 @@ elif page == "Social assessment":
     st.caption(
         "The access and availability figures are 2050 scenario targets or projections, not "
         "achieved outcomes. The thesis discusses water access in southern regions separately "
-        "from its national indicators."
+        "from its national indicators. In that regional discussion, current safe-water access "
+        "is described as around 70%. This is a differently framed regional statement and "
+        "should not be treated as the same measurement as the 70.6% national comparison above."
+    )
+
+    st.info(
+        "The thesis also cites a projected decline of around 20% in national rainfall by 2050. "
+        "Together with the projection that more than 80% of the population could face water "
+        "stress without substantial intervention, this describes the future water-security "
+        "challenge—not a measured outcome or the result of the proposed transition scenarios."
     )
 
     st.subheader("Potential benefits for southern Algeria")
@@ -726,6 +735,13 @@ elif page == "Environmental assessment":
         "0.84 system efficiency, 0.24 capacity factor and 0.6 ground coverage ratio. This is a "
         "PV land estimate, not the complete land or ecological footprint of all energy and export infrastructure."
     )
+    st.write(
+        "The thesis characterises Site 02 as sparsely populated and having low ecological "
+        "activity. Nevertheless, large-scale land occupation may affect grazing, mobility, "
+        "local livelihoods and cultural practices. These potential impacts require local "
+        "consultation and fair benefit-sharing; the site description should not be read as "
+        "evidence that the land is without social or environmental value."
+    )
 
     st.subheader("3. CO₂ emissions reported in the thesis")
     em = se["emissions"]
@@ -752,9 +768,14 @@ elif page == "Environmental assessment":
         "conversion facilities or other infrastructure. Likewise, the reported emissions results "
         "do not by themselves establish that every pathway has zero life-cycle greenhouse-gas emissions."
     )
-    with st.expander("Additional interpretation and limitations from the thesis"):
+    with st.expander("Additional environmental data and interpretation notes"):
         for item in se["limitations"]:
             st.write("• " + item)
+        st.caption(
+            "These notes combine qualifications stated in the thesis with clarifications "
+            "made when interpreting and presenting its data. They should not all be read "
+            "as limitations explicitly identified by the thesis author."
+        )
 
 elif page == "Interactive scenario explorer":
     st.header("Interactive scenario explorer — financial sensitivity")
@@ -788,8 +809,66 @@ elif page == "Methodology and sources":
 
 elif page == "Thesis limitations and critical considerations":
     st.header("Thesis limitations and critical considerations")
-    st.write("This section distinguishes limitations acknowledged in the thesis from additional observations identified when reviewing the thesis results and supporting material.")
-    st.info("The detailed limitations content is being developed separately. This page is reserved so that limitations are not mixed into the reported scenario results.")
+    st.write(
+        "This section brings together broader methodological limitations and critical "
+        "observations that affect how the thesis results should be interpreted. Detailed "
+        "indicator-specific qualifications remain in the relevant Technical, Social and "
+        "Environmental Assessment sections."
+    )
+
+    st.subheader("1. Modelling scope and scenario assumptions")
+    st.markdown("""
+    - The results are based on modelled 2050 scenarios and their underlying assumptions; they are not forecasts or proof that the proposed systems will be implemented as modelled.
+    - Financial sensitivity calculations in this dashboard do not rerun EnergyPLAN and do not establish hourly system feasibility, operational performance or the ability to deliver the adjusted export volumes.
+    - The thesis's cost-minimised configurations should be understood within the model's assumptions and boundaries, rather than as proof of a universally optimal or implementation-ready system.
+    """)
+
+    st.subheader("2. Export infrastructure and delivery assumptions")
+    st.markdown("""
+    - Export pathways depend on substantial electricity, hydrogen, gas, water and other supporting infrastructure. Planned or proposed infrastructure should not be confused with infrastructure that is already operational.
+    - The thesis assumes that 50% of submarine infrastructure costs for the electricity and hydrogen pathways are allocated to Algeria, with the remaining 50% assumed to be financed by Italy and Spain. This is a modelling assumption, not a confirmed financing agreement.
+    - The e-methane export volume should be considered alongside the operational capacity of the TransMed and Medgaz pipelines. The thesis's reported 574 TWh/year e-methane export volume is higher than their combined stated capacity of 455 TWh/year; the thesis does not include the additional pipeline capacity and investment that this difference would require in its e-methane economic assessment.
+    - Proposed or inactive routes, including GALSI and MEG, should not be treated as operational export capacity in the current infrastructure assessment.
+    """)
+
+    st.subheader("3. Economic interpretation")
+    st.markdown("""
+    - Reported net profit and LCOX use different cost calculations. The export cost used for the net-profit calculation should not be confused with the incremental system cost used for LCOX.
+    - The thesis reports an electricity export cost and net-profit result that differ from the corresponding figures in the supporting workbook. The dashboard retains the thesis-reported values as the primary reference and flags the discrepancy rather than silently replacing them.
+    - The 50% submarine-cost allocation is an assumption about the share of specified submarine infrastructure costs; it does not mean that half of all export-system costs are financed by other countries.
+    """)
+
+    st.subheader("4. Renewable-energy siting and spatial precision")
+    st.markdown("""
+    - The four candidate zones are manually delineated reference areas. The thesis does not provide precise GIS polygons or coordinates that would support treating the displayed boundaries as surveyed project sites.
+    - Site-to-wilaya associations are indicative. The map uses the historical 58-wilaya administrative reference to remain consistent with the thesis and should not be interpreted as a precise current administrative or cadastral boundary dataset.
+    - The MCDA results depend on the selected criteria, scoring ranges and weights. The original criterion weights sum to 2.00 rather than 1.00; they are retained as importance coefficients and are not silently normalised. Some criteria also rely on simplifying assumptions, including distance-to-grid categories and historical rehabilitation potential scores.
+    """)
+
+    st.subheader("5. Social and environmental evidence")
+    st.markdown("""
+    - Employment, water-access, land-use and emissions indicators are modelled estimates, scenario targets or projections. Their interpretation and specific qualifications are explained in the Social and Environmental Assessment sections.
+    - PV land estimates cover the estimated area for solar panels under the thesis assumptions; they do not represent the full spatial footprint or ecological effects of all associated infrastructure.
+    - The thesis's negative e-methane emissions balance is an accounting result and should not be interpreted as independently verified full life-cycle net-negative emissions.
+    """)
+
+    st.subheader("6. Differences and inconsistencies in reported figures")
+    st.write(
+        "Some generation figures differ between thesis narrative passages, thesis tables "
+        "and supporting workbook calculations. For example, the domestic-base generation "
+        "total is reported differently across these materials, and the electricity-export "
+        "narrative figure is not directly supported by the corresponding table and workbook "
+        "totals. These differences may reflect transcription or version inconsistencies; "
+        "the available material does not establish a definitive explanation. The dashboard "
+        "therefore prioritises the final thesis tables and identifies supporting-workbook "
+        "figures separately where relevant."
+    )
+    st.info(
+        "Attribution note: this page separates modelling assumptions and limitations "
+        "documented in the thesis from additional observations made during review of the "
+        "thesis and its supporting material. Not every critical observation above is "
+        "necessarily stated explicitly by the thesis author."
+    )
 
 elif page == "Future development":
     st.header("Future development")
