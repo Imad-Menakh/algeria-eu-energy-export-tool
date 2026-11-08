@@ -121,7 +121,7 @@ def render_site_admin_map(compact=False):
         ),
     ).add_to(m)
     folium.LayerControl(collapsed=False).add_to(m)
-    st_folium(m, use_container_width=True, height=312 if compact else 620, returned_objects=[])
+    st_folium(m, use_container_width=True, height=740 if compact else 620, returned_objects=[])
 
     if not compact:
         st.markdown(
