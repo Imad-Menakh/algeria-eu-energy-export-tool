@@ -149,6 +149,7 @@ elif page == "Renewable energy siting":
         else:
             st.warning("The thesis site-selection map image was not found in the assets folder.")
     with map_right:
+        st.markdown("**Administrative reference map — 58 wilayas**")
         render_site_admin_map(compact=True)
 
     st.caption("The thesis does not provide precise GIS boundaries or coordinates for the manually delineated candidate zones. The 58-wilaya map is an administrative reference only.")
@@ -576,36 +577,6 @@ elif page == "Social assessment":
         "not observed or guaranteed employment outcomes."
     )
 
-    with st.expander("Additional employment data and interpretation notes"):
-        st.markdown("""
-        - Employment figures are modelled estimates based on technology employment factors, investment assumptions and adjustment multipliers; they are not guaranteed jobs or observed employment.
-        - Permanent jobs are annual ongoing positions; temporary employment is measured in job-years. These units must not be added together or presented as equivalent.
-        - The desalination employment intensity is stated to be valid only up to plant capacity of 150 million m³/year; the thesis cautions that scaling to larger future plants makes predictions less reliable.
-        """)
-        st.caption("These qualifications are presented here with the social employment results because they directly concern the interpretation of employment estimates.")
-
-    with st.expander("How the thesis estimates employment"):
-        method = se["employment_method"]
-        st.write("**Permanent employment:** " + method["permanent_jobs"])
-        st.write("**Temporary employment:** " + method["temporary_jobs"])
-        st.write(
-            "Adjustment factors: " + ", ".join(
-                f"{k.replace('_', ' ')} = {v}" for k, v in method["adjustment_factors"].items()
-            ) + "."
-        )
-        st.write(
-            f"Desalination employment factor: {method['desalination_factor_jobs_per_million_m3_year']} "
-            f"jobs per million m³/year. The thesis states that this relationship is valid up to "
-            f"{method['desalination_factor_limit_million_m3_year']} million m³/year and cautions "
-            "against extrapolating beyond that capacity."
-        )
-        st.write(
-            f"HVDC transmission: {method['hvdc_jobs_per_billion_eur_investment']:,} jobs per €bn "
-            f"of investment. Water infrastructure: "
-            f"{method['water_infrastructure_jobs_per_million_usd_investment']} jobs per US$ million "
-            "of investment."
-        )
-
     st.subheader("Water stress: the challenge and the 2050 scenario")
     st.write(
         "Figure 12 presents the projected water-stress challenge if substantial interventions "
@@ -719,6 +690,38 @@ elif page == "Social assessment":
         "This could increase pressure on local aquifers and limit the expected improvements in "
         "water security."
     )
+
+    st.divider()
+    st.subheader("Additional employment data and methodology")
+    with st.expander("Additional employment data and interpretation notes"):
+        st.markdown("""
+        - Employment figures are modelled estimates based on technology employment factors, investment assumptions and adjustment multipliers; they are not guaranteed jobs or observed employment.
+        - Permanent jobs are annual ongoing positions; temporary employment is measured in job-years. These units must not be added together or presented as equivalent.
+        - The desalination employment intensity is stated to be valid only up to plant capacity of 150 million m³/year; the thesis cautions that scaling to larger future plants makes predictions less reliable.
+        """)
+        st.caption("These qualifications are provided alongside the employment results to support their interpretation.")
+
+    with st.expander("How the thesis estimates employment"):
+        method = se["employment_method"]
+        st.write("**Permanent employment:** " + method["permanent_jobs"])
+        st.write("**Temporary employment:** " + method["temporary_jobs"])
+        st.write(
+            "Adjustment factors: " + ", ".join(
+                f"{k.replace('_', ' ')} = {v}" for k, v in method["adjustment_factors"].items()
+            ) + "."
+        )
+        st.write(
+            f"Desalination employment factor: {method['desalination_factor_jobs_per_million_m3_year']} "
+            f"jobs per million m³/year. The thesis states that this relationship is valid up to "
+            f"{method['desalination_factor_limit_million_m3_year']} million m³/year and cautions "
+            "against extrapolating beyond that capacity."
+        )
+        st.write(
+            f"HVDC transmission: {method['hvdc_jobs_per_billion_eur_investment']:,} jobs per €bn "
+            f"of investment. Water infrastructure: "
+            f"{method['water_infrastructure_jobs_per_million_usd_investment']} jobs per US$ million "
+            "of investment."
+        )
 
 elif page == "Environmental assessment":
     st.header("Environmental assessment")
