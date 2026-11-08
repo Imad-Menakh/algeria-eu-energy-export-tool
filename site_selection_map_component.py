@@ -1,9 +1,7 @@
-"""Independent interactive satellite map for the Algeria site-selection module.
+"""Interactive administrative reference map for the Algeria site-selection module.
 
-The polygons are the historical 58 wilaya administrative boundaries named in
-Appendix 2. They are NOT the manually delineated candidate-zone boundaries.
-This component deliberately does not invent the missing candidate polygons or
-reconstruct Scribble Maps infrastructure lines from a screenshot.
+This map highlights wilayas listed in Appendix 2. It does NOT claim to reproduce
+the manually drawn candidate-zone polygons in thesis Figure 2.1.
 """
 import requests
 import folium
@@ -41,6 +39,7 @@ SITE_MEMBERSHIP = {
     "33": ["Site 03"], "39": ["Site 03"], "55": ["Site 03"],
     "54": ["Site 04"], "11": ["Site 04"],
 }
+
 SITE_COLORS = {
     "Site 01": "#4934C8", "Site 02": "#42BFC0",
     "Site 03": "#C4B52B", "Site 04": "#B94D2F",
@@ -52,12 +51,11 @@ def load_wilaya_geojson():
     response.raise_for_status()
     data = response.json()
     for feature in data.get("features", []):
-        props = feature.setdefault("properties", {})
-        code = str(props.get("code", props.get("Code", ""))).zfill(2)
+        code = str(feature.get("properties", {}).get("code", "")).zfill(2)
         memberships = SITE_MEMBERSHIP.get(code, [])
-        props["wilaya_code"] = code
-        props["wilaya_name"] = WILAYA_NAMES.get(code, f"Wilaya {code}")
-        props["site_membership"] = ", ".join(memberships) if memberships else "Not listed in a candidate zone"
+        feature["properties"]["wilaya_code"] = code
+        feature["properties"]["wilaya_name"] = WILAYA_NAMES.get(code, f"Wilaya {code}")
+        feature["properties"]["site_membership"] = ", ".join(memberships) if memberships else "Not listed in a candidate zone"
     return data
 
 def _style(feature):
@@ -71,63 +69,70 @@ def _style(feature):
     elif memberships == "Site 04":
         color = SITE_COLORS["Site 04"]
     elif memberships:
-        color = "#777777"  # shared administrative associations
+        color = "#777777"  # shared wilaya: Beni Abbes or Ouargla
     else:
-        color = "#ffffff"
+        color = "#9a9a9a"
     return {
         "fillColor": color,
-        "color": "#f2f2f2" if memberships else "#b8b8b8",
-        "weight": 1.2 if memberships else 0.45,
-        "fillOpacity": 0.42 if memberships else 0.025,
+        "color": "#303030" if memberships else "#a0a0a0",
+        "weight": 1.0 if memberships else 0.45,
+        "fillOpacity": 0.48 if memberships else 0.08,
     }
 
 def render_site_admin_map():
-    st.subheader("Satellite imagery and 58-wilaya administrative reference")
+    st.subheader("Administrative reference map — 58 wilayas")
     st.caption(
-        "Coloured outlines identify wilayas associated with candidate zones in "
-        "Appendix 2. They are not the exact manually drawn site boundaries."
+        "This layer highlights the wilayas named in Appendix 2. It is an "
+        "administrative reference, not a digitisation of the exact manually "
+        "drawn candidate-zone boundaries in Figure 2.1."
     )
     try:
         geojson = load_wilaya_geojson()
     except Exception as exc:
         st.warning(
-            "The administrative boundary layer could not be loaded. The original "
-            "thesis figure remains available below as the reference map."
+            "The administrative boundary layer could not be loaded. "
+            "The thesis map below remains available as the primary reference."
         )
         st.caption(f"Technical detail: {exc}")
         return
 
     m = folium.Map(
-        location=[28.0, 2.5], zoom_start=4, tiles=None,
-        control_scale=True, prefer_canvas=True,
+        location=[28.2, 2.8],
+        zoom_start=4,
+        tiles=None,
+        control_scale=True,
     )
     folium.TileLayer(
-        tiles=("https://server.arcgisonline.com/ArcGIS/rest/services/"
-               "World_Imagery/MapServer/tile/{z}/{y}/{x}"),
-        attr=("Tiles © Esri — Sources: Esri, Maxar, Earthstar Geographics, "
-              "and the GIS User Community"),
-        name="Satellite imagery", overlay=False, control=True,
+        tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+        attr="Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community",
+        name="Satellite imagery",
+        overlay=False,
+        control=True,
     ).add_to(m)
     folium.GeoJson(
-        geojson, name="Historical 58-wilaya administrative reference",
+        geojson,
+        name="58 wilaya administrative boundaries",
         style_function=_style,
         tooltip=folium.GeoJsonTooltip(
             fields=["wilaya_name", "wilaya_code", "site_membership"],
-            aliases=["Wilaya:", "2019–2026 code:", "Appendix 2 association:"],
+            aliases=["Wilaya:", "2019–2026 code:", "Candidate-zone association:"],
             sticky=True,
         ),
     ).add_to(m)
     folium.LayerControl(collapsed=False).add_to(m)
-    st_folium(m, use_container_width=True, height=650, returned_objects=[])
+    st_folium(m, use_container_width=True, height=620, returned_objects=[])
 
     st.markdown(
-        "**How to read the map**\n"
-        "- Site 01, Site 02, Site 03 and Site 04 colours identify the wilayas listed under each site in Appendix 2.\n"
-        "- Grey identifies wilayas associated with more than one candidate zone: Beni Abbes (Sites 01 and 02) and Ouargla (Sites 02 and 03).\n"
-        "- The layer is an administrative reference only; it does not digitise the four site polygons, roads, gas pipelines or HVDC routes."
+        """
+        **How to read this layer**
+        - Coloured wilayas are named in the thesis as intersected by a candidate zone.
+        - Grey indicates an administrative wilaya listed under more than one site:
+          Beni Abbes (Sites 01 and 02) and Ouargla (Sites 02 and 03).
+        - Uncoloured wilayas are not listed in Appendix 2.
+        """
     )
     st.caption(
-        "Boundary source: syscli/algeria, historical 58-wilaya layer (2019–2026), "
+        "Boundary data: syscli/algeria, 58-wilaya historical layer (2019–2026), "
         "derived from OpenStreetMap/geoBoundaries; CC BY-SA 2.0. "
-        "Attribution: © OpenStreetMap contributors. Satellite tiles: Esri."
+        "Attribution: © OpenStreetMap contributors."
     )
