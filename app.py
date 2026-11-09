@@ -16,6 +16,28 @@ exports = pd.DataFrame(load_data("export_scenarios.json"))
 criteria = pd.DataFrame(load_data("siting_criteria.json"))
 sites = pd.DataFrame(load_data("siting_sites.json"))
 
+# Stable scenario palette: the same pathway keeps the same colour throughout the dashboard.
+SCENARIO_COLORS = {
+    "Algeria 2019 — Baseline": "#6B7280",
+    "Algeria 2019 baseline": "#6B7280",
+    "2019 baseline": "#6B7280",
+    "2050 — Domestic Base": "#2878B5",
+    "2050 Domestic Base": "#2878B5",
+    "2050 — Electricity Export": "#E69F00",
+    "2050 Electricity Export": "#E69F00",
+    "Electricity": "#E69F00",
+    "2050 — Green Hydrogen Export": "#009E73",
+    "2050 Green Hydrogen Export": "#009E73",
+    "Green hydrogen": "#009E73",
+    "2050 — E-methane Export": "#9467BD",
+    "2050 E-methane Export": "#9467BD",
+    "E-methane": "#9467BD",
+}
+
+def scenario_color(name):
+    """Return the palette colour for a scenario or export-pathway label."""
+    return SCENARIO_COLORS.get(str(name), "#6B7280")
+
 st.title("Algeria Energy Transition Explorer")
 st.caption("An interactive presentation of the findings of *Powering EU? — Energy scenarios for exporting electricity, green hydrogen and e-methane from Algeria to Europe* (Menakh, 2025).")
 st.caption(
@@ -107,6 +129,10 @@ if page == "Research overview":
     scenario_cols = st.columns(5)
     for col, (name, purpose, domestic_demand, export_volume) in zip(scenario_cols, scenarios):
         with col:
+            st.markdown(
+                f"<div style='height:5px;border-radius:4px;background:{scenario_color(name)};margin-bottom:9px'></div>",
+                unsafe_allow_html=True,
+            )
             st.markdown(f"**{name}**")
             st.caption(purpose)
             st.markdown(f"`{domestic_demand}`")
@@ -265,6 +291,10 @@ elif page == "Technical assessment":
     tech_df = pd.DataFrame(tech["scenarios"])
     selected = st.selectbox("Select a scenario", tech_df["name"].tolist())
     row = tech_df.loc[tech_df["name"] == selected].iloc[0]
+    st.markdown(
+        f"<div style='height:5px;border-radius:4px;background:{scenario_color(selected)};margin:2px 0 12px 0'></div>",
+        unsafe_allow_html=True,
+    )
     a,b,c = st.columns(3)
     a.metric("Onshore wind capacity", f"{row['wind_MW']:,.0f} MW")
     b.metric("Solar PV capacity", f"{row['pv_MW']:,.0f} MW")
@@ -297,6 +327,17 @@ elif page == "Scenario comparison":
     st.header("Scenario comparison — synthesis of the assessment")
     st.write("This section brings together the findings presented in the Technical, Social and Environmental Assessments. It is intended as a concluding synthesis: some indicators reappear here so that the five scenarios and three export pathways can be compared directly.")
     st.info("The comparison preserves the thesis’s source coverage. Where the thesis dataset supplied for this dashboard does not provide a comparable indicator for a scenario, the table shows ‘Not reported’ rather than estimating or filling the gap.")
+    st.markdown(
+        "**Scenario colour key**  " + "　".join(
+            f"<span style='display:inline-block;width:10px;height:10px;border-radius:50%;background:{colour};margin-right:5px'></span>{label}"
+            for label, colour in [
+                ("2019 baseline", "#6B7280"), ("Domestic Base", "#2878B5"),
+                ("Electricity Export", "#E69F00"), ("Green Hydrogen Export", "#009E73"),
+                ("E-methane Export", "#9467BD")
+            ]
+        ),
+        unsafe_allow_html=True,
+    )
 
     tech = load_data("technical_results.json")
     social_env = load_data("social_environment.json")
@@ -424,7 +465,7 @@ elif page == "Scenario comparison":
         ])
         st.markdown("**Critical excess electricity production (CEEP)**")
         st.dataframe(ceep_df, hide_index=True, use_container_width=True)
-        st.plotly_chart(px.bar(ceep_df, x="Scenario", y="CEEP (TWh/year)", title="Annual critical excess electricity production across all scenarios"), use_container_width=True)
+        st.plotly_chart(px.bar(ceep_df, x="Scenario", y="CEEP (TWh/year)", color="Scenario", color_discrete_map=SCENARIO_COLORS, title="Annual critical excess electricity production across all scenarios"), use_container_width=True)
         st.caption("CEEP is electricity generated from wind or solar PV that cannot be consumed or stored at the time of production and is curtailed. The 2050 values are reported in the thesis's discussion accompanying Figure 29 (pp. 95–96); 2019 CEEP is reported as zero.")
 
     st.subheader("Economic dimension — export pathway comparison")
@@ -452,6 +493,7 @@ elif page == "Scenario comparison":
     with econ_chart_left:
         st.plotly_chart(
             px.bar(exports, x="scenario", y="annual_revenue_EUR_bn",
+                   color="scenario", color_discrete_map=SCENARIO_COLORS,
                    title="Annual export revenue",
                    labels={"scenario": "Export pathway", "annual_revenue_EUR_bn": "€bn/year"}),
             use_container_width=True
@@ -459,6 +501,7 @@ elif page == "Scenario comparison":
     with econ_chart_right:
         st.plotly_chart(
             px.bar(exports, x="scenario", y="LCOX_EUR_MWh",
+                   color="scenario", color_discrete_map=SCENARIO_COLORS,
                    title="Levelised cost of export (LCOX)",
                    labels={"scenario": "Export pathway", "LCOX_EUR_MWh": "€/MWh"}),
             use_container_width=True
@@ -483,8 +526,8 @@ elif page == "Scenario comparison":
     st.subheader("Social dimension")
     st.write("Employment figures cover the four 2050 scenarios. Permanent jobs are ongoing positions; temporary employment is expressed in job-years. These units are not added together.")
     st.dataframe(emp_df.rename(columns={"scenario":"2050 scenario", "permanent_jobs":"Permanent jobs", "temporary_job_years":"Temporary job-years"}), hide_index=True, use_container_width=True)
-    st.plotly_chart(px.bar(emp_df, x="scenario", y="permanent_jobs", title="Permanent employment — 2050 scenarios", labels={"scenario":"Scenario", "permanent_jobs":"Jobs"}), use_container_width=True)
-    st.plotly_chart(px.bar(emp_df, x="scenario", y="temporary_job_years", title="Temporary employment — 2050 scenarios", labels={"scenario":"Scenario", "temporary_job_years":"Job-years"}), use_container_width=True)
+    st.plotly_chart(px.bar(emp_df, x="scenario", y="permanent_jobs", color="scenario", color_discrete_map=SCENARIO_COLORS, title="Permanent employment — 2050 scenarios", labels={"scenario":"Scenario", "permanent_jobs":"Jobs"}), use_container_width=True)
+    st.plotly_chart(px.bar(emp_df, x="scenario", y="temporary_job_years", color="scenario", color_discrete_map=SCENARIO_COLORS, title="Temporary employment — 2050 scenarios", labels={"scenario":"Scenario", "temporary_job_years":"Job-years"}), use_container_width=True)
     wa = social_env["water_access"]
     st.markdown("**Shared 2050 social water-access ambition (not a scenario-specific difference):** "
                 f"{wa['water_access_current_percent']}% current access to {wa['water_access_2050_percent']}% target; "
@@ -495,8 +538,8 @@ elif page == "Scenario comparison":
     st.write("The table separates total water demand for the energy scenarios from PV land requirements. Household water access is treated as a social benefit, not an environmental indicator.")
     env_view = water_df.merge(land_df[["scenario", "land_km2", "share_site_02_percent"]], on="scenario", how="left")
     st.dataframe(env_view.rename(columns={"scenario":"2050 scenario", "total_water_demand_Gm3_year":"Total water demand (Gm³/year)", "non_energy_use_Gm3_year":"Non-energy water use (Gm³/year)", "hydrogen_production_water_Gm3_year":"Hydrogen production (Gm³/year)", "pv_wind_operations_water_Gm3_year":"PV/wind operations (Gm³/year)", "land_km2":"PV land estimate (km²)", "share_site_02_percent":"Share of Site 02 (%)"}), hide_index=True, use_container_width=True)
-    st.plotly_chart(px.bar(water_df, x="scenario", y="total_water_demand_Gm3_year", title="Total water demand — 2050 scenarios", labels={"scenario":"Scenario", "total_water_demand_Gm3_year":"Gm³/year"}), use_container_width=True)
-    st.plotly_chart(px.bar(land_df, x="scenario", y="land_km2", title="Estimated solar PV land requirements — 2050 scenarios", labels={"scenario":"Scenario", "land_km2":"Land (km²)"}), use_container_width=True)
+    st.plotly_chart(px.bar(water_df, x="scenario", y="total_water_demand_Gm3_year", color="scenario", color_discrete_map=SCENARIO_COLORS, title="Total water demand — 2050 scenarios", labels={"scenario":"Scenario", "total_water_demand_Gm3_year":"Gm³/year"}), use_container_width=True)
+    st.plotly_chart(px.bar(land_df, x="scenario", y="land_km2", color="scenario", color_discrete_map=SCENARIO_COLORS, title="Estimated solar PV land requirements — 2050 scenarios", labels={"scenario":"Scenario", "land_km2":"Land (km²)"}), use_container_width=True)
     em = social_env["emissions"]
     emissions_rows = [
         {"Scenario":"Algeria 2019 baseline", "Reported CO₂ (Mt/year)":em["domestic_2019"], "Accounting scope":"Domestic energy-related emissions"},
@@ -550,7 +593,7 @@ elif page == "Social assessment":
         st.markdown("**Permanent employment — jobs**")
         st.plotly_chart(
             px.bar(
-                emp, x="scenario", y="permanent_jobs",
+                emp, x="scenario", y="permanent_jobs", color="scenario", color_discrete_map=SCENARIO_COLORS,
                 labels={"scenario": "2050 scenario", "permanent_jobs": "Permanent employment (jobs)"},
                 title="Estimated permanent employment"
             ),
@@ -560,7 +603,7 @@ elif page == "Social assessment":
         st.markdown("**Temporary employment — job-years**")
         st.plotly_chart(
             px.bar(
-                emp, x="scenario", y="temporary_job_years",
+                emp, x="scenario", y="temporary_job_years", color="scenario", color_discrete_map=SCENARIO_COLORS,
                 labels={"scenario": "2050 scenario", "temporary_job_years": "Temporary employment (job-years)"},
                 title="Estimated temporary employment"
             ),
@@ -744,7 +787,7 @@ elif page == "Environmental assessment":
     })
     st.dataframe(water_display, hide_index=True, use_container_width=True)
     st.plotly_chart(
-        px.bar(water, x="scenario", y="total_water_demand_Gm3_year",
+        px.bar(water, x="scenario", y="total_water_demand_Gm3_year", color="scenario", color_discrete_map=SCENARIO_COLORS,
                title="Total water demand by scenario",
                labels={"scenario": "2050 scenario", "total_water_demand_Gm3_year": "Water demand (Gm³/year)"}),
         use_container_width=True
@@ -765,7 +808,7 @@ elif page == "Environmental assessment":
     })
     st.dataframe(land_display, hide_index=True, use_container_width=True)
     st.plotly_chart(
-        px.bar(land, x="scenario", y="land_km2",
+        px.bar(land, x="scenario", y="land_km2", color="scenario", color_discrete_map=SCENARIO_COLORS,
                title="Estimated land required for solar PV",
                labels={"scenario": "2050 scenario", "land_km2": "Estimated PV land (km²)"}),
         use_container_width=True
