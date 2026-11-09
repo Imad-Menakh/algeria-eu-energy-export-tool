@@ -164,6 +164,30 @@ if page == "Research overview":
         "additional calculations, interpretations and interactive sensitivities."
     )
 
+    st.divider()
+    st.subheader("About the Developer & Contact")
+
+    st.write(
+        "This dashboard was developed by Imadeddine Menakh as an interactive "
+        "extension of the master's thesis:"
+    )
+
+    st.markdown(
+        "*Powering EU? – Energy scenarios for exporting electricity, "
+        "green hydrogen and e-methane from Algeria to Europe.*"
+    )
+
+    st.caption("LUT University | 2025")
+
+    st.markdown(
+        "**Email:** [imadmodelling@gmail.com](mailto:imadmodelling@gmail.com)"
+    )
+
+    st.markdown(
+        "**LinkedIn:** [Imadeddine Menakh]"
+        "(https://www.linkedin.com/in/imadeddine-menakh-34502b37a/)"
+    )
+
 elif page == "Renewable energy siting":
     st.header("Renewable energy siting assessment")
     st.write("The thesis applies a two-step process: preliminary spatial filtering, followed by a multi-criteria suitability assessment (MCDA).")
