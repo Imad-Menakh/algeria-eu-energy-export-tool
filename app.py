@@ -922,6 +922,15 @@ if st.button("↺ Reset to original thesis values"):
         step=0.5,
         key=f"price_{chosen}"
     )
+
+    volume = st.slider(
+        "Delivered export volume (TWh/year)",
+        100, 1000,
+        value=float(row["export_volume_TWh_year"]),
+        step=5,
+        key=f"volume_{chosen}"
+    )
+    
     revenue = volume * price / 1000
     thesis_cost = float(row["annual_export_cost_for_profit_EUR_bn"])
     thesis_volume = float(row["export_volume_TWh_year"])
