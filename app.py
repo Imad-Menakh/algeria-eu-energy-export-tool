@@ -905,14 +905,22 @@ elif page == "Interactive scenario explorer":
         unsafe_allow_html=True
     )
 
-    price = st.slider(
-        "Market price (€/MWh)", 10.0, 200.0,
-        float(row["market_price_EUR_MWh"]), 0.5
-    )
+    # Reset controls for the currently selected scenario
+    reset_key = f"reset_{chosen}"
 
-    volume = st.slider(
-        "Delivered export volume (TWh/year)", 100, 1000,
-        int(row["export_volume_TWh_year"]), 5
+if reset_key not in st.session_state:
+    st.session_state[reset_key] = 0
+
+if st.button("↺ Reset to original thesis values"):
+    st.session_state[f"price_{chosen}"] = float(row["market_price_EUR_MWh"])
+    st.session_state[f"volume_{chosen}"] = int(row["export_volume_TWh_year"])
+
+    price = st.slider(
+        "Market price (€/MWh)",
+        10.0, 200.0,
+        value=float(row["market_price_EUR_MWh"]),
+        step=0.5,
+        key=f"price_{chosen}"
     )
 
     revenue = volume * price / 1000
