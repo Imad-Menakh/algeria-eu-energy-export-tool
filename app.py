@@ -905,33 +905,40 @@ elif page == "Interactive scenario explorer":
         unsafe_allow_html=True
     )
 
-    # Reset controls for the currently selected scenario
-    reset_key = f"reset_{chosen}"
+        # Reset controls for the currently selected scenario
+    price_key = f"price_{chosen}"
+    volume_key = f"volume_{chosen}"
 
-if reset_key not in st.session_state:
-    st.session_state[reset_key] = 0
+    # Initialise each scenario with its original thesis values
+    if price_key not in st.session_state:
+        st.session_state[price_key] = float(row["market_price_EUR_MWh"])
 
-if st.button("↺ Reset to original thesis values"):
-    st.session_state[f"price_{chosen}"] = float(row["market_price_EUR_MWh"])
-    st.session_state[f"volume_{chosen}"] = int(row["export_volume_TWh_year"])
+    if volume_key not in st.session_state:
+        st.session_state[volume_key] = int(row["export_volume_TWh_year"])
 
+    # Reset only the currently selected scenario
+    if st.button("↺ Reset to original thesis values"):
+        st.session_state[price_key] = float(row["market_price_EUR_MWh"])
+        st.session_state[volume_key] = int(row["export_volume_TWh_year"])
+
+    # Sliders remain visible whether reset is clicked or not
     price = st.slider(
         "Market price (€/MWh)",
         10.0, 200.0,
-        value=float(row["market_price_EUR_MWh"]),
         step=0.5,
-        key=f"price_{chosen}"
+        key=price_key
     )
 
     volume = st.slider(
         "Delivered export volume (TWh/year)",
         100, 1000,
-        value=int(row["export_volume_TWh_year"]),
         step=5,
-        key=f"volume_{chosen}"
+        key=volume_key
     )
-    
+
+    # Financial calculations
     revenue = volume * price / 1000
+
     thesis_cost = float(row["annual_export_cost_for_profit_EUR_bn"])
     thesis_volume = float(row["export_volume_TWh_year"])
 
@@ -944,7 +951,7 @@ if st.button("↺ Reset to original thesis values"):
     a.metric("Adjusted revenue", f"€{revenue:,.3f}bn/year")
     b.metric("Adjusted export cost", f"€{cost:,.3f}bn/year")
     c.metric("Indicative net profit", f"€{profit:,.3f}bn/year")
-    
+
     st.caption(
         f"Implied average export cost: €{cost_per_twh:.3f} billion per "
         "TWh/year of delivered export capacity, based on the selected "
@@ -960,7 +967,7 @@ if st.button("↺ Reset to original thesis values"):
         "simplified financial sensitivity assumption, not a new "
         "EnergyPLAN simulation or a detailed engineering cost model."
     )
-    
+
     st.warning(
         "Financial sensitivity only. This does not rerun EnergyPLAN or recalculate "
         "hourly generation, demand, storage, curtailment, transmission losses or "
