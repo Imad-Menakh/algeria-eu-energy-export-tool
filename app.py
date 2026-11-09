@@ -888,26 +888,19 @@ elif page == "Interactive scenario explorer":
 
     scenario_color = SCENARIO_COLORS.get(chosen, "#2878B5")
 
-    st.markdown(
+st.markdown(
         f"""
-        <style>
-        /* Slider active track */
-        div[data-testid="stSlider"] [data-baseweb="slider"]
-        > div > div:nth-child(2) {{
-            background-color: {scenario_color} !important;
-        }}
-
-        /* Slider thumb */
-        div[data-testid="stSlider"] [role="slider"] {{
-            background-color: {scenario_color} !important;
-            border-color: {scenario_color} !important;
-        }}
-
-        /* Slider value */
-        div[data-testid="stSlider"] [data-testid="stThumbValue"] {{
-            color: {scenario_color} !important;
-        }}
-        </style>
+        <div style="
+            background-color: {scenario_color}20;
+            border-left: 6px solid {scenario_color};
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            color: {scenario_color};
+            font-weight: bold;
+        ">
+            Selected scenario: {chosen}
+        </div>
         """,
         unsafe_allow_html=True
     )
