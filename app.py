@@ -888,6 +888,21 @@ elif page == "Interactive scenario explorer":
 
     scenario_color = SCENARIO_COLORS.get(chosen, "#2878B5")
 
+    st.markdown(
+        f"""
+        <style>
+        div[data-testid="stSlider"] [role="slider"] {{
+            background-color: {scenario_color} !important;
+            border-color: {scenario_color} !important;
+        }}
+        div[data-testid="stSlider"] [data-baseweb="slider"] > div > div {{
+            background: {scenario_color} !important;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     price = st.slider(
         "Market price (€/MWh)", 10.0, 200.0,
         float(row["market_price_EUR_MWh"]), 0.5
@@ -906,44 +921,6 @@ elif page == "Interactive scenario explorer":
     a.metric("Adjusted revenue", f"€{revenue:,.3f}bn/year")
     b.metric("Fixed thesis cost assumption", f"€{cost:,.3f}bn/year")
     c.metric("Indicative net profit", f"€{profit:,.3f}bn/year")
-
-    # Market-price sensitivity
-    price_values = list(range(10, 201, 5))
-    price_df = pd.DataFrame({
-        "Market price (€/MWh)": price_values,
-        "Indicative net profit (€bn/year)": [
-            volume * p / 1000 - cost for p in price_values
-        ]
-    })
-
-    st.subheader("Sensitivity to market price")
-    fig_price = px.line(
-        price_df,
-        x="Market price (€/MWh)",
-        y="Indicative net profit (€bn/year)",
-        color_discrete_sequence=[scenario_color]
-    )
-    fig_price.add_vline(x=price, line_dash="dash")
-    st.plotly_chart(fig_price, use_container_width=True)
-
-    # Delivered-export-volume sensitivity
-    volume_values = list(range(100, 1001, 25))
-    volume_df = pd.DataFrame({
-        "Delivered export volume (TWh/year)": volume_values,
-        "Indicative net profit (€bn/year)": [
-            v * price / 1000 - cost for v in volume_values
-        ]
-    })
-
-    st.subheader("Sensitivity to delivered export volume")
-    fig_volume = px.line(
-        volume_df,
-        x="Delivered export volume (TWh/year)",
-        y="Indicative net profit (€bn/year)",
-        color_discrete_sequence=[scenario_color]
-    )
-    fig_volume.add_vline(x=volume, line_dash="dash")
-    st.plotly_chart(fig_volume, use_container_width=True)
 
     st.warning(
         "Financial sensitivity only. This does not rerun EnergyPLAN or recalculate "
