@@ -1223,6 +1223,17 @@ elif page == "Future development":
         "These are proposed directions for further research. They are not results of the "
         "2025 thesis and are not features currently implemented in this dashboard."
     )
-
 st.divider()
-st.caption("Reference: Imadeddine Menakh (2025), *Powering EU? – Energy scenarios for exporting electricity, green hydrogen and e-methane from Algeria to Europe*.")
+st.markdown(
+    """
+    <div style="text-align:center; color:grey; font-size:13px; padding:10px;">
+        Developed by <strong>Imadeddine Menakh</strong> |
+        LUT University, 2025<br>
+        <a href="mailto:imadmodelling@gmail.com">Contact by email</a>
+        &nbsp;|&nbsp;
+        <a href="https://www.linkedin.com/in/imadeddine-menakh-34502b37a/"
+           target="_blank">LinkedIn</a>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
