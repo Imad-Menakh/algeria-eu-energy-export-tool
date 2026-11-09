@@ -891,12 +891,21 @@ elif page == "Interactive scenario explorer":
     st.markdown(
         f"""
         <style>
+        /* Slider active track */
+        div[data-testid="stSlider"] [data-baseweb="slider"]
+        > div > div:nth-child(2) {{
+            background-color: {scenario_color} !important;
+        }}
+
+        /* Slider thumb */
         div[data-testid="stSlider"] [role="slider"] {{
             background-color: {scenario_color} !important;
             border-color: {scenario_color} !important;
         }}
-        div[data-testid="stSlider"] [data-baseweb="slider"] > div > div {{
-            background: {scenario_color} !important;
+
+        /* Slider value */
+        div[data-testid="stSlider"] [data-testid="stThumbValue"] {{
+            color: {scenario_color} !important;
         }}
         </style>
         """,
