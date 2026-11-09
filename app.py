@@ -1064,7 +1064,7 @@ elif page == "Thesis limitations and critical considerations":
     - Reported net profit and LCOX use different cost calculations. The export cost used for the net-profit calculation should not be confused with the incremental system cost used for LCOX.
     - The 50% submarine-cost allocation is an assumption about the share of specified submarine infrastructure costs; it does not mean that half of all export-system costs are financed by other countries.
     """)
-        st.markdown("""
+    st.markdown("""
     **Government subsidies and public financial support**
     - The thesis does not explicitly quantify the effects of government subsidies and other forms of public financial support in Algeria's electricity and fuel sectors within its profitability assessment.
     - These support mechanisms may influence the financial results of the proposed export pathways through energy input prices, regulated tariffs, infrastructure costs, tax arrangements and other forms of financial assistance.
