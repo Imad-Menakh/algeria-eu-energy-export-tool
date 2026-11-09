@@ -33,6 +33,11 @@ SCENARIO_COLORS = {
     "2050 E-methane Export": "#9467BD",
     "E-methane": "#9467BD",
 }
+TECHNOLOGY_COLORS = {
+    "Onshore wind": "#87CEEB",
+    "Wind": "#87CEEB",
+    "Solar PV": "#FFD700",
+}
 
 def scenario_color(name):
     """Return the palette colour for a scenario or export-pathway label."""
@@ -309,11 +314,11 @@ elif page == "Technical assessment":
     st.subheader("Installed wind and solar capacity")
     cap = tech_df.melt(id_vars="name",value_vars=["wind_MW","pv_MW"],var_name="Technology",value_name="Capacity (MW)")
     cap["Technology"] = cap["Technology"].map({"wind_MW":"Onshore wind","pv_MW":"Solar PV"})
-    st.plotly_chart(px.bar(cap,x="name",y="Capacity (MW)",color="Technology",barmode="group",title="Installed generation capacity"),use_container_width=True)
+    st.plotly_chart(px.bar(cap,x="name",y="Capacity (MW)",color="Technology",color_discrete_map=TECHNOLOGY_COLORS,barmode="group",title="Installed generation capacity"),use_container_width=True)
     st.subheader("Annual wind and solar generation")
     gen = tech_df.melt(id_vars="name",value_vars=["wind_TWh","pv_TWh"],var_name="Technology",value_name="Generation (TWh/year)")
     gen["Technology"] = gen["Technology"].map({"wind_TWh":"Onshore wind","pv_TWh":"Solar PV"})
-    st.plotly_chart(px.bar(gen,x="name",y="Generation (TWh/year)",color="Technology",barmode="group",title="Wind and PV generation"),use_container_width=True)
+    st.plotly_chart(px.bar(gen,x="name",y="Generation (TWh/year)",color="Technology",color_discrete_map=TECHNOLOGY_COLORS,barmode="group",title="Wind and PV generation"),use_container_width=True)
     st.write(
         f"For the electricity-export pathway, the thesis models {tech['notes']['electricity_export_input_TWh']} TWh/year entering the export chain. It assumes {tech['notes']['electricity_export_losses_TWh']} TWh/year of losses, leaving {tech['notes']['electricity_export_net_TWh']} TWh/year delivered. Flexible demand is estimated at {tech['notes']['flexible_demand_TWh']} TWh/year."
     )
@@ -450,7 +455,7 @@ elif page == "Scenario comparison":
     if not tech_df.empty:
         gen = tech_df[["name", "wind_TWh", "pv_TWh"]].melt(id_vars="name", var_name="Technology", value_name="Generation (TWh/year)")
         gen["Technology"] = gen["Technology"].map({"wind_TWh":"Wind", "pv_TWh":"Solar PV"})
-        st.plotly_chart(px.bar(gen, x="name", y="Generation (TWh/year)", color="Technology", barmode="group", title="Annual wind and PV generation — 2050 scenarios"), use_container_width=True)
+        st.plotly_chart(px.bar(gen, x="name", y="Generation (TWh/year)", color="Technology", color_discrete_map=TECHNOLOGY_COLORS, barmode="group", title="Annual wind and PV generation — 2050 scenarios"), use_container_width=True)
         storage_df = tech_df[["name", "battery_GWh", "hydrogen_GWh", "gas_GWh"]].rename(columns={"name":"2050 scenario", "battery_GWh":"Battery storage (GWh)", "hydrogen_GWh":"Hydrogen storage (GWh)", "gas_GWh":"Gas storage (GWh)"})
         st.markdown("**Storage requirements across all 2050 scenarios**")
         st.dataframe(storage_df, hide_index=True, use_container_width=True)
@@ -877,19 +882,76 @@ elif page == "Environmental assessment":
 elif page == "Interactive scenario explorer":
     st.header("Interactive scenario explorer — financial sensitivity")
     st.write("Adjust market price and delivered export volume while holding the thesis cost assumption constant.")
-    chosen = st.selectbox("Select export pathway",exports["scenario"].tolist())
-    row = exports.loc[exports["scenario"]==chosen].iloc[0]
-    price = st.slider("Market price (€/MWh)",10.0,200.0,float(row["market_price_EUR_MWh"]),0.5)
-    volume = st.slider("Delivered export volume (TWh/year)",100,1000,int(row["export_volume_TWh_year"]),5)
-    revenue = volume*price/1000
-    cost = float(row["annual_export_cost_for_profit_EUR_bn"])
-    profit = revenue-cost
-    a,b,c = st.columns(3)
-    a.metric("Adjusted revenue",f"€{revenue:,.3f}bn/year")
-    b.metric("Fixed thesis cost assumption",f"€{cost:,.3f}bn/year")
-    c.metric("Indicative net profit",f"€{profit:,.3f}bn/year")
-    st.warning("Financial sensitivity only. This does not rerun EnergyPLAN or recalculate hourly generation, demand, storage, curtailment, transmission losses or physical system feasibility. Changing export volume does not demonstrate that the energy system can deliver it.")
 
+    chosen = st.selectbox("Select export pathway", exports["scenario"].tolist())
+    row = exports.loc[exports["scenario"] == chosen].iloc[0]
+
+    scenario_color = SCENARIO_COLORS.get(chosen, "#2878B5")
+
+    price = st.slider(
+        "Market price (€/MWh)", 10.0, 200.0,
+        float(row["market_price_EUR_MWh"]), 0.5
+    )
+
+    volume = st.slider(
+        "Delivered export volume (TWh/year)", 100, 1000,
+        int(row["export_volume_TWh_year"]), 5
+    )
+
+    revenue = volume * price / 1000
+    cost = float(row["annual_export_cost_for_profit_EUR_bn"])
+    profit = revenue - cost
+
+    a, b, c = st.columns(3)
+    a.metric("Adjusted revenue", f"€{revenue:,.3f}bn/year")
+    b.metric("Fixed thesis cost assumption", f"€{cost:,.3f}bn/year")
+    c.metric("Indicative net profit", f"€{profit:,.3f}bn/year")
+
+    # Market-price sensitivity
+    price_values = list(range(10, 201, 5))
+    price_df = pd.DataFrame({
+        "Market price (€/MWh)": price_values,
+        "Indicative net profit (€bn/year)": [
+            volume * p / 1000 - cost for p in price_values
+        ]
+    })
+
+    st.subheader("Sensitivity to market price")
+    fig_price = px.line(
+        price_df,
+        x="Market price (€/MWh)",
+        y="Indicative net profit (€bn/year)",
+        color_discrete_sequence=[scenario_color]
+    )
+    fig_price.add_vline(x=price, line_dash="dash")
+    st.plotly_chart(fig_price, use_container_width=True)
+
+    # Delivered-export-volume sensitivity
+    volume_values = list(range(100, 1001, 25))
+    volume_df = pd.DataFrame({
+        "Delivered export volume (TWh/year)": volume_values,
+        "Indicative net profit (€bn/year)": [
+            v * price / 1000 - cost for v in volume_values
+        ]
+    })
+
+    st.subheader("Sensitivity to delivered export volume")
+    fig_volume = px.line(
+        volume_df,
+        x="Delivered export volume (TWh/year)",
+        y="Indicative net profit (€bn/year)",
+        color_discrete_sequence=[scenario_color]
+    )
+    fig_volume.add_vline(x=volume, line_dash="dash")
+    st.plotly_chart(fig_volume, use_container_width=True)
+
+    st.warning(
+        "Financial sensitivity only. This does not rerun EnergyPLAN or recalculate "
+        "hourly generation, demand, storage, curtailment, transmission losses or "
+        "physical system feasibility. Changing export volume does not demonstrate "
+        "that the energy system can deliver it."
+    )
+    
 elif page == "Methodology and sources":
     st.header("Methodology and sources")
     st.write(
@@ -1002,6 +1064,13 @@ elif page == "Thesis limitations and critical considerations":
     - Reported net profit and LCOX use different cost calculations. The export cost used for the net-profit calculation should not be confused with the incremental system cost used for LCOX.
     - The 50% submarine-cost allocation is an assumption about the share of specified submarine infrastructure costs; it does not mean that half of all export-system costs are financed by other countries.
     """)
+        st.markdown("""
+    **Government subsidies and public financial support**
+    - The thesis does not explicitly quantify the effects of government subsidies and other forms of public financial support in Algeria's electricity and fuel sectors within its profitability assessment.
+    - These support mechanisms may influence the financial results of the proposed export pathways through energy input prices, regulated tariffs, infrastructure costs, tax arrangements and other forms of financial assistance.
+    - Depending on how such support is structured, including it could change the estimated costs, revenues and net profitability of the export projects. Therefore, the reported profits should not be interpreted as a complete assessment of profitability under Algeria's actual subsidy and pricing arrangements.
+    - A distinction should also be made between financial profitability for project developers and economic value for Algeria as a whole. Government subsidies may improve a project's financial position while creating additional costs for the public budget.
+    """)
 
     st.subheader("4. Renewable-energy siting and spatial precision")
     st.markdown("""
@@ -1093,6 +1162,14 @@ elif page == "Future development":
     - Assess how financing structures, subsidies, policy frameworks and international market conditions affect export competitiveness.
     - Improve regional evidence on employment, water access, land use and the distribution of costs and benefits.
     - Integrate economic, environmental, social and policy dimensions to support long-term decision-making about Algeria's energy transition.
+    """)
+
+    st.subheader("7. Government subsidies and the broader economic assessment")
+    st.markdown("""
+    - Future research should examine how Algeria's government subsidies and public financial support for the electricity and fuel sectors affect the financial viability of renewable-energy export pathways.
+    - The analysis could incorporate regulated electricity and fuel prices, direct and indirect subsidies, tax incentives, public infrastructure contributions and other forms of government support.
+    - It should distinguish between project-level financial profitability and the wider economic impact on Algeria, including the fiscal cost of subsidies and the opportunity cost of public resources.
+    - This would provide a more comprehensive assessment of whether the proposed export pathways create net economic value for Algeria, rather than focusing exclusively on the profitability of the projects.
     """)
 
     st.info(
