@@ -924,7 +924,6 @@ if st.button("↺ Reset to original thesis values"):
     )
 
     revenue = volume * price / 1000
-
     thesis_cost = float(row["annual_export_cost_for_profit_EUR_bn"])
     thesis_volume = float(row["export_volume_TWh_year"])
 
