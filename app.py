@@ -926,7 +926,7 @@ if st.button("↺ Reset to original thesis values"):
     volume = st.slider(
         "Delivered export volume (TWh/year)",
         100, 1000,
-        value=float(row["export_volume_TWh_year"]),
+        value=int(row["export_volume_TWh_year"]),
         step=5,
         key=f"volume_{chosen}"
     )
