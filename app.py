@@ -888,7 +888,7 @@ elif page == "Interactive scenario explorer":
 
     scenario_color = SCENARIO_COLORS.get(chosen, "#2878B5")
 
-st.markdown(
+    st.markdown(
         f"""
         <div style="
             background-color: {scenario_color}20;
