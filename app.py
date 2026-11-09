@@ -916,14 +916,36 @@ elif page == "Interactive scenario explorer":
     )
 
     revenue = volume * price / 1000
-    cost = float(row["annual_export_cost_for_profit_EUR_bn"])
+
+    thesis_cost = float(row["annual_export_cost_for_profit_EUR_bn"])
+    thesis_volume = float(row["export_volume_TWh_year"])
+
+    cost_per_twh = thesis_cost / thesis_volume
+    cost = cost_per_twh * volume
+
     profit = revenue - cost
 
     a, b, c = st.columns(3)
     a.metric("Adjusted revenue", f"€{revenue:,.3f}bn/year")
-    b.metric("Fixed thesis cost assumption", f"€{cost:,.3f}bn/year")
+    b.metric("Adjusted export cost", f"€{cost:,.3f}bn/year")
     c.metric("Indicative net profit", f"€{profit:,.3f}bn/year")
+    
+    st.caption(
+        f"Implied average export cost: €{cost_per_twh:.3f} billion per "
+        "TWh/year of delivered export capacity, based on the selected "
+        "scenario's original thesis cost and export volume."
+    )
 
+    st.info(
+        "Cost adjustment assumption: the original thesis export cost is "
+        "used as the reference point. When market price changes, costs "
+        "remain constant. When delivered export volume changes, export "
+        "costs are assumed to change proportionally, using the average "
+        "cost per TWh derived from the thesis scenario. This is a "
+        "simplified financial sensitivity assumption, not a new "
+        "EnergyPLAN simulation or a detailed engineering cost model."
+    )
+    
     st.warning(
         "Financial sensitivity only. This does not rerun EnergyPLAN or recalculate "
         "hourly generation, demand, storage, curtailment, transmission losses or "
