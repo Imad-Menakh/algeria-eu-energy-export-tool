@@ -314,7 +314,7 @@ algeria-eu-energy-export-tool/
 ├── app.py
 ├── requirements.txt
 └── site_selection_map_component.py
-tetx```
+```
 
 
 Directory and File Descriptions
