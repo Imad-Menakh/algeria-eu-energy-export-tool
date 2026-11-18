@@ -292,7 +292,7 @@ Structured the research findings into an accessible multi-module application.
 
 The repository is organised into the following directories and files:
 
-``text
+```text
 algeria-eu-energy-export-tool/
 │
 ├── assets/
@@ -314,6 +314,8 @@ algeria-eu-energy-export-tool/
 ├── app.py
 ├── requirements.txt
 └── site_selection_map_component.py
+tetx```
+
 
 Directory and File Descriptions
 
